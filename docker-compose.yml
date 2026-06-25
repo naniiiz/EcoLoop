@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ecoloop-postgres
+    environment:
+      POSTGRES_DB: ecoloop_db
+      POSTGRES_USER: ecoloop_user
+      POSTGRES_PASSWORD: ecoloop_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecoloop_user -d ecoloop_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
