@@ -41,38 +41,38 @@ class AgentServiceTest {
 
     @Test
     void chatRetornaMensajeFallbackCuandoApiLanza() {
-        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
         when(habitContextBuilder.buildContext(1L)).thenReturn("contexto test");
         when(conversacionRepository.findTop20ByUsuarioIdOrderByCreatedAtDesc(1L))
                 .thenReturn(Collections.emptyList());
         when(geminiWebClient.post()).thenThrow(new RuntimeException("API caída"));
         when(conversacionRepository.save(any())).thenReturn(null);
 
-        String resultado = agentService.chat(1L, "Hola");
+        String resultado = agentService.chat("test@test.com", "Hola");
 
         assertNotNull(resultado);
-        assertTrue(resultado.contains("EcoLoop"));
+        assertTrue(resultado.contains("Kiru"));
     }
 
     @Test
     void habitContextBuilderEsInvocadoConElUsuarioId() {
-        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findByEmail("test@test.com")).thenReturn(Optional.of(usuario));
         when(habitContextBuilder.buildContext(1L)).thenReturn("contexto");
         when(conversacionRepository.findTop20ByUsuarioIdOrderByCreatedAtDesc(1L))
                 .thenReturn(Collections.emptyList());
         when(geminiWebClient.post()).thenThrow(new RuntimeException("API caída"));
         when(conversacionRepository.save(any())).thenReturn(null);
 
-        agentService.chat(1L, "Hola");
+        agentService.chat("test@test.com", "Hola");
 
         verify(habitContextBuilder, times(1)).buildContext(1L);
     }
 
     @Test
     void chatLanzaExcepcionSiUsuarioNoExiste() {
-        when(usuarioRepository.findById(99L)).thenReturn(Optional.empty());
+        when(usuarioRepository.findByEmail("noexiste@test.com")).thenReturn(Optional.empty());
 
         assertThrows(com.ecoloop.exception.ResourceNotFoundException.class,
-                () -> agentService.chat(99L, "Hola"));
+                () -> agentService.chat("noexiste@test.com", "Hola"));
     }
 }

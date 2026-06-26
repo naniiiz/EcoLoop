@@ -6,6 +6,8 @@ import com.ecoloop.domain.dto.agent.ChatResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,8 +18,10 @@ public class AgentController {
     private final AgentService agentService;
 
     @PostMapping("/chat")
-    public ResponseEntity<ChatResponse> chat(@Valid @RequestBody ChatRequest request) {
-        String respuesta = agentService.chat(request.usuarioId(), request.mensaje());
+    public ResponseEntity<ChatResponse> chat(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody ChatRequest request) {
+        String respuesta = agentService.chat(userDetails.getUsername(), request.mensaje());
         return ResponseEntity.ok(new ChatResponse(respuesta, 0));
     }
 }
