@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Eye, EyeOff } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
 import api from '../services/api'
 
@@ -10,6 +11,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
   const setAuth = useAuthStore(s => s.setAuth)
 
@@ -35,8 +37,23 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-eco-50 dark:bg-gray-900 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-3">
-            <img src="/kiru/castor-botella.webp" alt="Kiru" width={80} height={80} className="object-contain" />
+          <div className="flex justify-center mb-3 relative" style={{ height: 160 }}>
+            <img
+              src="/kiru/kiru-feliz.png"
+              alt="Kiru"
+              width={160}
+              height={160}
+              className="object-contain absolute transition-opacity duration-300"
+              style={{ opacity: showPassword ? 0 : 1 }}
+            />
+            <img
+              src="/kiru/kiru-ojos-tapados.png"
+              alt="Kiru tapándose los ojos"
+              width={160}
+              height={160}
+              className="object-contain absolute transition-opacity duration-300"
+              style={{ opacity: showPassword ? 1 : 0 }}
+            />
           </div>
           <h1 className="text-3xl font-bold text-eco-700 dark:text-eco-400">EcoLoop</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">IA que gamifica tu reciclaje</p>
@@ -51,9 +68,15 @@ export default function LoginPage() {
           <input type="email" placeholder="Email" value={email}
             onChange={e => setEmail(e.target.value)} required
             className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-eco-500" />
-          <input type="password" placeholder="Contrasena" value={password}
-            onChange={e => setPassword(e.target.value)} required
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-eco-500" />
+          <div className="relative">
+            <input type={showPassword ? 'text' : 'password'} placeholder="Contraseña" value={password}
+              onChange={e => setPassword(e.target.value)} required
+              className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-eco-500" />
+            <button type="button" onClick={() => setShowPassword(v => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
