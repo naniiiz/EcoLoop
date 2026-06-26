@@ -2,34 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Light mode: verde */
-:root {
-  --eco-50:  240 253 244;
-  --eco-100: 220 252 231;
-  --eco-200: 187 247 208;
-  --eco-300: 134 239 172;
-  --eco-400: 74  222 128;
-  --eco-500: 34  197 94;
-  --eco-600: 22  163 74;
-  --eco-700: 21  128 61;
-  --eco-800: 22  101 52;
-  --eco-900: 20  83  45;
-}
-
-/* Dark mode: celeste (sky) */
-.dark {
-  --eco-50:  240 249 255;
-  --eco-100: 224 242 254;
-  --eco-200: 186 230 253;
-  --eco-300: 125 211 252;
-  --eco-400: 56  189 248;
-  --eco-500: 14  165 233;
-  --eco-600: 2   132 199;
-  --eco-700: 3   105 161;
-  --eco-800: 7   89  133;
-  --eco-900: 12  74  110;
-}
-
 body {
   @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors duration-200;
 }
+
+/* Dark mode: eco verde → sky celeste */
+.dark .bg-eco-50        { background-color: #f0f9ff; }
+.dark .bg-eco-600       { background-color: #0284c7; }
+.dark .hover\:bg-eco-700:hover { background-color: #0369a1; }
+
+.dark .text-eco-400,
+.dark .dark\:text-eco-400 { color: #38bdf8; }
+
+.dark .text-eco-500,
+.dark .dark\:text-eco-500 { color: #0ea5e9; }
+
+.dark .text-eco-600,
+.dark .dark\:text-eco-600 { color: #0284c7; }
+
+.dark .text-eco-700,
+.dark .dark\:text-eco-700 { color: #0369a1; }
+
+.dark .hover\:text-eco-600:hover { color: #0284c7; }
+
+.dark .focus\:ring-eco-500:focus { --tw-ring-color: #0ea5e9; }
+
+.dark .border-eco-500   { border-color: #0ea5e9; }
