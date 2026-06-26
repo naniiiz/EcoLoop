@@ -22,10 +22,10 @@ security:
 
 gemini:
   api-key: ${GEMINI_API_KEY}
-  model: gemini-2.0-flash
+  model: gemini-2.5-flash
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:${PORT:8080}}
 
 springdoc:
   api-docs:

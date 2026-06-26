@@ -3,6 +3,7 @@ package com.ecoloop.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -45,9 +46,9 @@ public class Usuario {
     @Column(name = "ultimo_registro")
     private LocalDate ultimoRegistro;
 
-    @Column(name = "meta_semanal_kg")
+    @Column(name = "meta_semanal_kg", precision = 5, scale = 2)
     @Builder.Default
-    private Double metaSemanalKg = 2.0;
+    private BigDecimal metaSemanalKg = BigDecimal.valueOf(2.0);
 
     @Column(name = "created_at")
     @Builder.Default

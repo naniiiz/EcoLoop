@@ -35,7 +35,10 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-eco-50 dark:bg-gray-900 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-eco-700 dark:text-eco-400">🌱 EcoLoop</h1>
+          <div className="flex justify-center mb-3">
+            <img src="/kiru/castor-botella.webp" alt="Kiru" width={80} height={80} className="object-contain" />
+          </div>
+          <h1 className="text-3xl font-bold text-eco-700 dark:text-eco-400">EcoLoop</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">IA que gamifica tu reciclaje</p>
         </div>
 
@@ -48,7 +51,7 @@ export default function LoginPage() {
           <input type="email" placeholder="Email" value={email}
             onChange={e => setEmail(e.target.value)} required
             className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-eco-500" />
-          <input type="password" placeholder="Contraseña" value={password}
+          <input type="password" placeholder="Contrasena" value={password}
             onChange={e => setPassword(e.target.value)} required
             className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-eco-500" />
 
@@ -56,15 +59,15 @@ export default function LoginPage() {
 
           <button type="submit" disabled={loading}
             className="w-full py-3 bg-eco-600 hover:bg-eco-700 text-white font-semibold rounded-xl transition-colors disabled:opacity-60">
-            {loading ? 'Cargando...' : isRegister ? 'Registrarse' : 'Iniciar sesión'}
+            {loading ? 'Cargando...' : isRegister ? 'Registrarse' : 'Iniciar sesion'}
           </button>
         </form>
 
         <p className="text-center mt-4 text-sm text-gray-500 dark:text-gray-400">
-          {isRegister ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?'}{' '}
+          {isRegister ? 'Ya tienes cuenta?' : 'No tienes cuenta?'}{' '}
           <button onClick={() => setIsRegister(!isRegister)}
             className="text-eco-600 hover:underline font-medium">
-            {isRegister ? 'Inicia sesión' : 'Regístrate'}
+            {isRegister ? 'Inicia sesion' : 'Registrate'}
           </button>
         </p>
       </div>
