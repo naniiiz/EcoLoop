@@ -9,9 +9,10 @@ export default defineConfig({
       '/auth':        'http://localhost:8082',
       '/agente':      'http://localhost:8082',
       '/residuos':    'http://localhost:8082',
+      '/tipos-residuo':'http://localhost:8082',
       '/gamificacion':'http://localhost:8082',
       '/impacto':     'http://localhost:8082',
-      '/usuario':     'http://localhost:8082',
+      '/usuarios':    'http://localhost:8082',
     }
   }
 })

@@ -1,6 +1,7 @@
 package com.ecoloop.service;
 
 import com.ecoloop.domain.dto.impacto.ImpactoMensualItem;
+import com.ecoloop.domain.dto.impacto.ImpactoPorTipoItem;
 import com.ecoloop.domain.dto.impacto.ImpactoResumenResponse;
 import com.ecoloop.domain.model.RegistroReciclaje;
 import com.ecoloop.domain.model.Usuario;
@@ -81,6 +82,41 @@ public class ImpactoService {
                         e.getValue().stream().mapToInt(RegistroReciclaje::getXpGanado).sum()
                 ))
                 .sorted(Comparator.comparing(ImpactoMensualItem::mes))
+                .collect(Collectors.toList());
+    }
+
+    public List<ImpactoPorTipoItem> getPorTipo(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", email));
+
+        List<RegistroReciclaje> registros = registroRepository
+                .findByUsuarioIdOrderByFechaRegistroDesc(usuario.getId());
+
+        Map<String, List<RegistroReciclaje>> porTipo = registros.stream()
+                .collect(Collectors.groupingBy(r -> r.getTipoResiduo().getCodigo()));
+
+        return porTipo.entrySet().stream()
+                .map(e -> {
+                    List<RegistroReciclaje> items = e.getValue();
+                    RegistroReciclaje first = items.get(0);
+                    double co2 = items.stream()
+                            .mapToDouble(r -> r.getCo2EvitadoKg() != null ? r.getCo2EvitadoKg().doubleValue() : 0)
+                            .sum();
+                    double kg = items.stream()
+                            .mapToDouble(r -> r.getCantidadKg().doubleValue())
+                            .sum();
+                    int xp = items.stream().mapToInt(RegistroReciclaje::getXpGanado).sum();
+
+                    return new ImpactoPorTipoItem(
+                            first.getTipoResiduo().getCodigo(),
+                            first.getTipoResiduo().getNombre(),
+                            Math.round(co2 * 100.0) / 100.0,
+                            Math.round(kg * 100.0) / 100.0,
+                            xp,
+                            items.size()
+                    );
+                })
+                .sorted(Comparator.comparing(ImpactoPorTipoItem::co2Kg).reversed())
                 .collect(Collectors.toList());
     }
 }

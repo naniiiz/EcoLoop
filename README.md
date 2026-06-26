@@ -34,6 +34,32 @@ Plataforma web de gamificación del reciclaje doméstico con agente de IA conver
 
 ---
 
+## Avance actual
+
+### Backend
+- [x] `POST /residuos` registra residuos con cálculo automático de CO2 y XP
+- [x] `GET /usuarios/me` devuelve perfil autenticado desde JWT
+- [x] `GET /tipos-residuo` lista tipos para formularios
+- [x] `GET /impacto/resumen` entrega CO2 total, kg reciclados y equivalencias
+- [x] `GET /impacto/mensual` agrupa impacto por mes
+- [x] `GET /impacto/por-tipo` agrupa impacto por tipo de residuo
+- [x] `GET /gamificacion/insignias` lista insignias y estado desbloqueado
+- [x] `GamificacionService` actualiza XP, racha, niveles e insignias
+- [x] Chat de Kiru usa usuario autenticado por JWT, sin `usuarioId` enviado desde frontend
+
+### Frontend
+- [x] Dashboard con datos reales, barra de nivel, equivalencias y gráficos Recharts
+- [x] Gráfico mensual aclarado: cada barra suma todos los tipos del mes
+- [x] Gráfico por tipo de residuo: cada barra representa un tipo registrado
+- [x] Página de registro de residuos en `/registro` con Kiru CONFIRM
+- [x] Pantalla de gamificación en `/logros` con insignias y barra XP
+- [x] Perfil de hábitos en `/perfil` con Kiru ANALYZE
+- [x] Chat Kiru sin `usuarioId` hardcodeado
+- [x] Rutas con `errorElement` para evitar pantalla cruda ante errores
+- [x] Proxy Vite actualizado para `/usuarios` y `/tipos-residuo`
+
+---
+
 ## Lo que está hecho (Día 2 — Miguel)
 
 ### Backend
@@ -75,19 +101,21 @@ Plataforma web de gamificación del reciclaje doméstico con agente de IA conver
 ## Pendiente
 
 ### Backend (Cristina / Miguel)
-- [ ] `POST /residuos` — registrar residuo con CO2 automático y XP
-- [ ] `GET /usuarios/me` — perfil del usuario autenticado
-- [ ] `GET /tipos-residuo` — listar tipos para el formulario
-- [ ] `GET /impacto/resumen` — CO2 total, equivalencias visuales
-- [ ] `GET /impacto/mensual` — datos para gráfico de barras
-- [ ] `GamificacionService` — lógica de nivel up, racha, insignias
+- [x] `POST /residuos` — registrar residuo con CO2 automático y XP
+- [x] `GET /usuarios/me` — perfil del usuario autenticado
+- [x] `GET /tipos-residuo` — listar tipos para el formulario
+- [x] `GET /impacto/resumen` — CO2 total, equivalencias visuales
+- [x] `GET /impacto/mensual` — datos para gráfico de barras mensual
+- [x] `GET /impacto/por-tipo` — datos para gráfico por tipo de residuo
+- [x] `GET /gamificacion/insignias` — insignias y estado desbloqueado
+- [x] `GamificacionService` — lógica de nivel up, racha, insignias
 
 ### Frontend (Franck / Miguel)
-- [ ] Página de registro de residuos (formulario + Kiru CONFIRM)
-- [ ] Dashboard con datos reales (CO2, gráficos Recharts)
-- [ ] Pantalla de gamificación (insignias, barra XP, Kiru CELEBRATE)
-- [ ] Perfil de hábitos con Kiru ANALYZE
-- [ ] Fix `usuarioId` hardcodeado en ChatPage (requiere `GET /usuarios/me`)
+- [x] Página de registro de residuos (formulario + Kiru CONFIRM)
+- [x] Dashboard con datos reales (CO2, equivalencias y gráficos Recharts)
+- [x] Pantalla de gamificación (insignias, barra XP, Kiru CELEBRATE)
+- [x] Perfil de hábitos con Kiru ANALYZE
+- [x] Fix `usuarioId` hardcodeado en ChatPage (usa JWT)
 
 ### Infraestructura (Miguel)
 - [ ] Deploy en Railway (backend + PostgreSQL) — Día 5
@@ -132,8 +160,8 @@ DB_HOST=localhost
 DB_PORT=5434
 DB_NAME=ecoloop_db
 DB_USER=ecoloop_user
-DB_PASS=ecoloop_pass
-JWT_SECRET=ecoloop-jwt-secret-key-change-in-production-256bits-secure
+DB_PASS=TU_PASSWORD_LOCAL
+JWT_SECRET=CAMBIA_ESTE_SECRETO_256_BITS
 GEMINI_API_KEY=TU_KEY_AQUI
 ```
 
@@ -188,7 +216,7 @@ Frontend disponible en: `http://localhost:5173`
 ```bash
 curl -X POST http://localhost:8082/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"nombre":"Tu Nombre","email":"tu@email.com","password":"password123"}'
+  -d '{"nombre":"Tu Nombre","email":"tu@email.com","password":"TU_PASSWORD"}'
 ```
 
 ---

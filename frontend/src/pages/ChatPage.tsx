@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Send } from 'lucide-react'
 import Navbar from '../components/layout/Navbar'
 import KiruState from '../components/kiru/KiruState'
-import api from '../services/api'
+import { enviarMensajeKiru, getPerfil } from '../services/ecoloop'
 import { ChatMessage } from '../types'
 
 const WELCOME: ChatMessage = {
@@ -11,6 +12,7 @@ const WELCOME: ChatMessage = {
 }
 
 export default function ChatPage() {
+  const { data: perfil } = useQuery({ queryKey: ['perfil'], queryFn: getPerfil })
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -25,7 +27,7 @@ export default function ChatPage() {
     setMessages(prev => [...prev, { rol: 'user', contenido: mensaje }])
     setLoading(true)
     try {
-      const { data } = await api.post('/agente/chat', { usuarioId: 1, mensaje })
+      const data = await enviarMensajeKiru(mensaje)
       setMessages(prev => [...prev, { rol: 'assistant', contenido: data.respuesta }])
     } catch {
       setMessages(prev => [...prev, {
@@ -45,7 +47,7 @@ export default function ChatPage() {
         <div className="flex items-center gap-3 px-1">
           <KiruState state={loading ? 'THINKING' : 'RECOMMEND'} size={48} />
           <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-            {loading ? 'Kiru esta pensando...' : 'Kiru'}
+            {loading ? 'Kiru esta pensando...' : `Kiru${perfil?.nombre ? ` para ${perfil.nombre}` : ''}`}
           </span>
         </div>
 

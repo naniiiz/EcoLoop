@@ -1,6 +1,7 @@
 package com.ecoloop.controller;
 
 import com.ecoloop.domain.dto.impacto.ImpactoMensualItem;
+import com.ecoloop.domain.dto.impacto.ImpactoPorTipoItem;
 import com.ecoloop.domain.dto.impacto.ImpactoResumenResponse;
 import com.ecoloop.service.ImpactoService;
 import lombok.RequiredArgsConstructor;
@@ -28,5 +29,11 @@ public class ImpactoController {
     public ResponseEntity<List<ImpactoMensualItem>> getMensual(
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(impactoService.getMensual(userDetails.getUsername()));
+    }
+
+    @GetMapping("/por-tipo")
+    public ResponseEntity<List<ImpactoPorTipoItem>> getPorTipo(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(impactoService.getPorTipo(userDetails.getUsername()));
     }
 }

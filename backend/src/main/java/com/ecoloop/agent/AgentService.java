@@ -44,6 +44,7 @@ public class AgentService {
     public String chat(String email, String mensaje) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", email));
+        Long usuarioId = usuario.getId();
 
         String context = habitContextBuilder.buildContext(usuarioId);
         String systemPrompt = buildSystemPrompt(context);
