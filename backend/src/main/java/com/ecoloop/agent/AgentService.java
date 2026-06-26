@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,19 +20,22 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AgentService {
 
-    private final WebClient anthropicWebClient;
+    private final WebClient geminiWebClient;
     private final HabitContextBuilder habitContextBuilder;
     private final ConversacionRepository conversacionRepository;
     private final UsuarioRepository usuarioRepository;
 
-    @Value("${anthropic.model:claude-sonnet-4-6}")
+    @Value("${gemini.api-key}")
+    private String apiKey;
+
+    @Value("${gemini.model:gemini-2.0-flash}")
     private String model;
 
-    public AgentService(@Qualifier("anthropicWebClient") WebClient anthropicWebClient,
+    public AgentService(@Qualifier("geminiWebClient") WebClient geminiWebClient,
                         HabitContextBuilder habitContextBuilder,
                         ConversacionRepository conversacionRepository,
                         UsuarioRepository usuarioRepository) {
-        this.anthropicWebClient = anthropicWebClient;
+        this.geminiWebClient = geminiWebClient;
         this.habitContextBuilder = habitContextBuilder;
         this.conversacionRepository = conversacionRepository;
         this.usuarioRepository = usuarioRepository;
@@ -46,7 +50,7 @@ public class AgentService {
         List<Conversacion> historial = conversacionRepository
                 .findTop20ByUsuarioIdOrderByCreatedAtDesc(usuarioId);
 
-        String respuesta = callClaude(systemPrompt, mensaje, historial);
+        String respuesta = callGemini(systemPrompt, mensaje, historial);
 
         guardarMensaje(usuario, "user", mensaje);
         guardarMensaje(usuario, "assistant", respuesta);
@@ -70,23 +74,28 @@ public class AgentService {
     }
 
     @SuppressWarnings("unchecked")
-    private String callClaude(String systemPrompt, String userMessage, List<Conversacion> historial) {
+    private String callGemini(String systemPrompt, String userMessage, List<Conversacion> historial) {
         try {
-            List<Map<String, String>> messages = historial.stream()
+            List<Map<String, Object>> contents = new ArrayList<>(historial.stream()
                     .sorted((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt()))
-                    .map(c -> Map.of("role", c.getRol(), "content", c.getContenido()))
-                    .collect(Collectors.toList());
-            messages.add(Map.of("role", "user", "content", userMessage));
+                    .map(c -> Map.<String, Object>of(
+                            "role", "assistant".equals(c.getRol()) ? "model" : c.getRol(),
+                            "parts", List.of(Map.of("text", c.getContenido()))
+                    ))
+                    .collect(Collectors.toList()));
+            contents.add(Map.<String, Object>of(
+                    "role", "user",
+                    "parts", List.of(Map.of("text", userMessage))
+            ));
 
             Map<String, Object> body = Map.of(
-                    "model", model,
-                    "max_tokens", 1024,
-                    "system", systemPrompt,
-                    "messages", messages
+                    "system_instruction", Map.of("parts", List.of(Map.of("text", systemPrompt))),
+                    "contents", contents,
+                    "generationConfig", Map.of("maxOutputTokens", 1024)
             );
 
-            Map<String, Object> response = anthropicWebClient.post()
-                    .uri("/messages")
+            Map<String, Object> response = geminiWebClient.post()
+                    .uri("/models/" + model + ":generateContent?key=" + apiKey)
                     .bodyValue(body)
                     .retrieve()
                     .bodyToMono(Map.class)
@@ -94,13 +103,17 @@ public class AgentService {
 
             if (response == null) return getFallback();
 
-            List<Map<String, Object>> content = (List<Map<String, Object>>) response.get("content");
-            if (content == null || content.isEmpty()) return getFallback();
+            List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.get("candidates");
+            if (candidates == null || candidates.isEmpty()) return getFallback();
 
-            return (String) content.get(0).get("text");
+            Map<String, Object> content = (Map<String, Object>) candidates.get(0).get("content");
+            List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
+            if (parts == null || parts.isEmpty()) return getFallback();
+
+            return (String) parts.get(0).get("text");
 
         } catch (Exception e) {
-            log.error("Error llamando a Claude API: {}", e.getMessage());
+            log.error("Error llamando a Gemini API: {}", e.getMessage());
             return getFallback();
         }
     }

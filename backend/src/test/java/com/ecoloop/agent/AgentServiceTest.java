@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AgentServiceTest {
 
-    @Mock private WebClient anthropicWebClient;
+    @Mock private WebClient geminiWebClient;
     @Mock private HabitContextBuilder habitContextBuilder;
     @Mock private ConversacionRepository conversacionRepository;
     @Mock private UsuarioRepository usuarioRepository;
@@ -31,7 +31,7 @@ class AgentServiceTest {
     @BeforeEach
     void setUp() {
         agentService = new AgentService(
-                anthropicWebClient, habitContextBuilder,
+                geminiWebClient, habitContextBuilder,
                 conversacionRepository, usuarioRepository
         );
         usuario = Usuario.builder()
@@ -45,7 +45,7 @@ class AgentServiceTest {
         when(habitContextBuilder.buildContext(1L)).thenReturn("contexto test");
         when(conversacionRepository.findTop20ByUsuarioIdOrderByCreatedAtDesc(1L))
                 .thenReturn(Collections.emptyList());
-        when(anthropicWebClient.post()).thenThrow(new RuntimeException("API caída"));
+        when(geminiWebClient.post()).thenThrow(new RuntimeException("API caída"));
         when(conversacionRepository.save(any())).thenReturn(null);
 
         String resultado = agentService.chat(1L, "Hola");
@@ -60,7 +60,7 @@ class AgentServiceTest {
         when(habitContextBuilder.buildContext(1L)).thenReturn("contexto");
         when(conversacionRepository.findTop20ByUsuarioIdOrderByCreatedAtDesc(1L))
                 .thenReturn(Collections.emptyList());
-        when(anthropicWebClient.post()).thenThrow(new RuntimeException("API caída"));
+        when(geminiWebClient.post()).thenThrow(new RuntimeException("API caída"));
         when(conversacionRepository.save(any())).thenReturn(null);
 
         agentService.chat(1L, "Hola");

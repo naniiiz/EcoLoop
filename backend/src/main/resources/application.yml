@@ -20,9 +20,9 @@ security:
     secret: ${JWT_SECRET}
     expiration: 86400000
 
-anthropic:
-  api-key: ${ANTHROPIC_API_KEY}
-  model: claude-sonnet-4-6
+gemini:
+  api-key: ${GEMINI_API_KEY}
+  model: gemini-2.0-flash
 
 server:
   port: 8080
