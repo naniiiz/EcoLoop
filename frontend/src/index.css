@@ -28,3 +28,15 @@ body {
 .dark .focus\:ring-eco-500:focus { --tw-ring-color: #0ea5e9; }
 
 .dark .border-eco-500   { border-color: #0ea5e9; }
+
+/* Kiru theme toggle */
+@keyframes kiru-flip {
+  0%   { transform: scale(1) rotateY(0deg); }
+  40%  { transform: scale(1.4) rotateY(90deg); }
+  60%  { transform: scale(1.4) rotateY(270deg); }
+  100% { transform: scale(1) rotateY(360deg); }
+}
+
+.kiru-animate {
+  animation: kiru-flip 0.5s ease-in-out;
+}

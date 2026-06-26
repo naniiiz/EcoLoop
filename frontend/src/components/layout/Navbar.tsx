@@ -1,13 +1,11 @@
 import { NavLink, Link, useNavigate } from 'react-router-dom'
-import { type ReactNode } from 'react'
+import { type ReactNode, useState, useCallback } from 'react'
 import {
   LayoutDashboard,
   LogOut,
   MessageCircle,
-  Moon,
   PlusCircle,
   Recycle,
-  Sun,
   Trophy,
   UserRound
 } from 'lucide-react'
@@ -21,9 +19,31 @@ const links = [
   { to: '/chat', label: 'Kiru', icon: MessageCircle }
 ]
 
+function KiruToggleIcon({ theme, animating }: { theme: string; animating: boolean }) {
+  // light mode → show moon (will switch to dark), dark mode → show sun (will switch to light)
+  const src = theme === 'light' ? '/kiru/kiru-luna.png' : '/kiru/kiru-sol.png'
+  return (
+    <img
+      src={src}
+      alt={theme === 'light' ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'}
+      width={34}
+      height={34}
+      className={animating ? 'kiru-animate' : ''}
+      style={{ objectFit: 'contain', display: 'block' }}
+    />
+  )
+}
+
 export default function Navbar() {
   const { nombre, logout, theme, toggleTheme } = useAuthStore()
   const navigate = useNavigate()
+  const [animating, setAnimating] = useState(false)
+
+  const handleToggleTheme = useCallback(() => {
+    setAnimating(true)
+    toggleTheme()
+    setTimeout(() => setAnimating(false), 500)
+  }, [toggleTheme])
 
   const handleLogout = () => {
     logout()
@@ -39,8 +59,8 @@ export default function Navbar() {
             <span className="text-xl font-bold text-eco-700 dark:text-eco-400">EcoLoop</span>
           </Link>
           <div className="flex items-center gap-2 lg:hidden">
-            <IconButton onClick={toggleTheme} title="Cambiar tema">
-              {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+            <IconButton onClick={handleToggleTheme} title="Cambiar tema" extraClass="dark:bg-[#1f2937] dark:hover:bg-[#1f2937]">
+              <KiruToggleIcon theme={theme} animating={animating} />
             </IconButton>
             <IconButton onClick={handleLogout} title="Salir" danger>
               <LogOut size={18} />
@@ -75,8 +95,8 @@ export default function Navbar() {
         </div>
 
         <div className="hidden lg:flex items-center gap-3">
-          <IconButton onClick={toggleTheme} title="Cambiar tema">
-            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          <IconButton onClick={handleToggleTheme} title="Cambiar tema">
+            <KiruToggleIcon theme={theme} animating={animating} />
           </IconButton>
           <span className="max-w-32 truncate text-sm text-gray-400 dark:text-gray-500">{nombre}</span>
           <button
@@ -96,22 +116,24 @@ function IconButton({
   children,
   danger = false,
   onClick,
-  title
+  title,
+  extraClass = ''
 }: {
   children: ReactNode
   danger?: boolean
   onClick: () => void
   title: string
+  extraClass?: string
 }) {
   return (
     <button
       onClick={onClick}
       title={title}
-      className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
+      className={`flex h-11 w-11 items-center justify-center rounded-lg transition-colors ${
         danger
           ? 'text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30'
           : 'text-gray-500 hover:bg-gray-50 hover:text-eco-700 dark:text-gray-400 dark:hover:bg-gray-700'
-      }`}
+      } ${extraClass}`}
     >
       {children}
     </button>

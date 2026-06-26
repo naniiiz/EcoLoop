@@ -126,11 +126,11 @@ Plataforma web de gamificación del reciclaje doméstico con agente de IA conver
 
 ### Diseño — Franck (Días 3-4)
 
-- [ ] QA visual completo: verificar que Kiru se ve bien en todas las pantallas y tamaños
-- [ ] Revisión mobile: formulario de registro, historial, perfil en pantallas pequeñas
+- [x] QA visual completo: verificar que Kiru se ve bien en todas las pantallas y tamaños
+- [x] Revisión mobile: formulario de registro, historial, perfil en pantallas pequeñas
 - [ ] Video demo 60 segundos mostrando el flujo completo (registro → XP → insignia → chat Kiru)
-- [ ] Assets adicionales de Kiru si se necesitan nuevos estados
-- [ ] Verificar que el tema dark/light se ve correcto en la demo
+- [x] Assets adicionales de Kiru: `kiru-luna.png` y `kiru-sol.png` para toggle dark/light
+- [x] Toggle dark/light rediseñado con silueta animada de Kiru (flip 3D al cambiar modo)
 
 ### Presentación — Carlos (Días 3-5)
 
