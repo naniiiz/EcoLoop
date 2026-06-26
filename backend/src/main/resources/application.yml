@@ -1,6 +1,9 @@
 spring:
   application:
     name: ecoloop-backend
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
     username: ${DB_USER}
@@ -32,3 +35,7 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+app:
+  cors:
+    allowed-origins: ${FRONTEND_URL:http://localhost:5173}

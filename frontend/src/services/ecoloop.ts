@@ -1,9 +1,11 @@
 import api from './api'
 import {
+  ActualizarPerfilRequest,
   Insignia,
   ImpactoMensualItem,
   ImpactoPorTipoItem,
   ImpactoResumen,
+  RegistroReciclaje,
   RegistroRequest,
   RegistroResponse,
   TipoResiduo,
@@ -12,6 +14,11 @@ import {
 
 export async function getPerfil() {
   const { data } = await api.get<Usuario>('/usuarios/me')
+  return data
+}
+
+export async function updatePerfil(payload: ActualizarPerfilRequest) {
+  const { data } = await api.put<Usuario>('/usuarios/me', payload)
   return data
 }
 
@@ -44,9 +51,19 @@ export async function getInsignias() {
   return data as Insignia[]
 }
 
+export async function getRegistros() {
+  const { data } = await api.get<unknown>('/residuos')
+  if (!Array.isArray(data)) throw new Error('residuos no devolvio una lista')
+  return data as RegistroReciclaje[]
+}
+
 export async function registrarResiduo(payload: RegistroRequest) {
   const { data } = await api.post<RegistroResponse>('/residuos', payload)
   return data
+}
+
+export async function deleteRegistro(id: number) {
+  await api.delete(`/residuos/${id}`)
 }
 
 export async function enviarMensajeKiru(mensaje: string) {

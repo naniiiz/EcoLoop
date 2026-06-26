@@ -22,7 +22,8 @@ export interface TipoResiduo {
 
 export interface RegistroReciclaje {
   id: number
-  tipoResiduo: TipoResiduo
+  tipoResiduo: string
+  tipoResiduoCodigo: string
   cantidadKg: number
   xpGanado: number
   co2EvitadoKg: number
@@ -79,6 +80,11 @@ export interface ImpactoPorTipoItem {
   kgReciclado: number
   xpGanado: number
   registros: number
+}
+
+export interface ActualizarPerfilRequest {
+  nombre: string
+  metaSemanalKg: number
 }
 
 export interface RegistroRequest {

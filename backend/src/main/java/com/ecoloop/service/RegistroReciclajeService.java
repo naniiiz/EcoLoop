@@ -1,5 +1,6 @@
 package com.ecoloop.service;
 
+import com.ecoloop.domain.dto.residuo.RegistroHistorialResponse;
 import com.ecoloop.domain.dto.residuo.RegistroRequest;
 import com.ecoloop.domain.dto.residuo.RegistroResponse;
 import com.ecoloop.domain.model.RegistroReciclaje;
@@ -10,11 +11,14 @@ import com.ecoloop.domain.repository.TipoResiduoRepository;
 import com.ecoloop.domain.repository.UsuarioRepository;
 import com.ecoloop.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -64,5 +68,32 @@ public class RegistroReciclajeService {
                 resultado.nombreNivelNuevo(),
                 resultado.nuevasInsignias()
         );
+    }
+
+    public List<RegistroHistorialResponse> listar(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", email));
+        return registroRepository.findByUsuarioIdOrderByFechaRegistroDesc(usuario.getId())
+                .stream()
+                .map(r -> new RegistroHistorialResponse(
+                        r.getId(),
+                        r.getTipoResiduo().getNombre(),
+                        r.getTipoResiduo().getCodigo(),
+                        r.getCantidadKg(),
+                        r.getXpGanado(),
+                        r.getCo2EvitadoKg(),
+                        r.getFechaRegistro()
+                ))
+                .toList();
+    }
+
+    @Transactional
+    public void eliminar(String email, Long id) {
+        RegistroReciclaje registro = registroRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Registro", "id", id));
+        if (!registro.getUsuario().getEmail().equals(email)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No autorizado");
+        }
+        registroRepository.delete(registro);
     }
 }

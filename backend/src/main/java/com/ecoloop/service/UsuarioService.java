@@ -1,5 +1,6 @@
 package com.ecoloop.service;
 
+import com.ecoloop.domain.dto.usuario.ActualizarPerfilRequest;
 import com.ecoloop.domain.dto.usuario.UsuarioPerfilResponse;
 import com.ecoloop.domain.model.Nivel;
 import com.ecoloop.domain.model.Usuario;
@@ -9,6 +10,7 @@ import com.ecoloop.domain.repository.UsuarioRepository;
 import com.ecoloop.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -46,5 +48,15 @@ public class UsuarioService {
                 usuario.getMetaSemanalKg(),
                 co2Total
         );
+    }
+
+    @Transactional
+    public UsuarioPerfilResponse actualizarPerfil(String email, ActualizarPerfilRequest request) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", email));
+        usuario.setNombre(request.nombre().trim());
+        usuario.setMetaSemanalKg(request.metaSemanalKg());
+        usuarioRepository.save(usuario);
+        return getPerfil(email);
     }
 }

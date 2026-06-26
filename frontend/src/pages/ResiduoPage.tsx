@@ -10,13 +10,14 @@ import {
   Recycle,
   Scale,
   Sprout,
+  Trash2,
   Trophy,
   Wine
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import Navbar from '../components/layout/Navbar'
 import KiruState from '../components/kiru/KiruState'
-import { getTiposResiduo, registrarResiduo } from '../services/ecoloop'
+import { deleteRegistro, getRegistros, getTiposResiduo, registrarResiduo } from '../services/ecoloop'
 import { RegistroResponse } from '../types'
 import { formatKg, formatNumber } from '../utils/format'
 
@@ -54,6 +55,11 @@ export default function ResiduoPage() {
   const co2Preview = selected && validAmount ? Number(selected.factorCo2Kg) * cantidadKg : 0
   const xpPreview = selected && validAmount ? Math.trunc(selected.xpPorKg * cantidadKg) : 0
 
+  const { data: historial = [] } = useQuery({
+    queryKey: ['registros'],
+    queryFn: getRegistros
+  })
+
   const mutation = useMutation({
     mutationFn: registrarResiduo,
     onSuccess: data => {
@@ -62,6 +68,18 @@ export default function ResiduoPage() {
       void queryClient.invalidateQueries({ queryKey: ['impacto-resumen'] })
       void queryClient.invalidateQueries({ queryKey: ['impacto-mensual'] })
       void queryClient.invalidateQueries({ queryKey: ['insignias'] })
+      void queryClient.invalidateQueries({ queryKey: ['registros'] })
+    }
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteRegistro,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['registros'] })
+      void queryClient.invalidateQueries({ queryKey: ['impacto-resumen'] })
+      void queryClient.invalidateQueries({ queryKey: ['impacto-mensual'] })
+      void queryClient.invalidateQueries({ queryKey: ['impacto-por-tipo'] })
+      void queryClient.invalidateQueries({ queryKey: ['perfil'] })
     }
   })
 
@@ -220,6 +238,37 @@ export default function ResiduoPage() {
             )}
           </aside>
         </section>
+
+        {historial.length > 0 && (
+          <section className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="font-semibold text-gray-800 dark:text-gray-100">Historial de registros</h3>
+            </div>
+            <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+              {historial.map(r => {
+                const Icon = typeIcons[r.tipoResiduoCodigo] ?? Leaf
+                const deleting = deleteMutation.isPending && deleteMutation.variables === r.id
+                return (
+                  <li key={r.id} className="flex items-center gap-3 px-5 py-3">
+                    <Icon size={18} className="text-eco-600 dark:text-eco-400 shrink-0" />
+                    <span className="flex-1 text-sm font-medium text-gray-800 dark:text-gray-100">{r.tipoResiduo}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{formatKg(r.cantidadKg, 2)}</span>
+                    <span className="text-sm text-eco-600 dark:text-eco-400 w-20 text-right">{formatKg(r.co2EvitadoKg, 2)} CO2</span>
+                    <span className="text-xs text-gray-400 w-28 text-right">{new Date(r.fechaRegistro).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                    <button
+                      onClick={() => deleteMutation.mutate(r.id)}
+                      disabled={deleting}
+                      className="ml-2 p-1.5 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-40 transition-colors"
+                      aria-label="Eliminar registro"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+        )}
       </main>
     </div>
   )
