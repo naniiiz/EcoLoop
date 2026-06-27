@@ -34,7 +34,7 @@ Plataforma web de gamificación del reciclaje doméstico con agente de IA conver
 
 ---
 
-## Estado MVP — Día 3
+## Estado MVP — Día 4
 
 ### Backend — funcional al 100%
 
@@ -68,7 +68,7 @@ Plataforma web de gamificación del reciclaje doméstico con agente de IA conver
 
 ## Avance por persona
 
-### Miguel Salas — Día 3 (hoy)
+### Miguel Salas — Día 4 (hoy · biney-debug)
 
 - [x] `GET /residuos` — historial de registros del usuario autenticado
 - [x] `DELETE /residuos/{id}` — eliminar registro con verificación de ownership
@@ -79,7 +79,21 @@ Plataforma web de gamificación del reciclaje doméstico con agente de IA conver
 - [x] Jackson configurado: fechas como ISO string, no array
 - [x] Al borrar registro invalida automáticamente dashboard (impacto-resumen, mensual, por-tipo, perfil)
 
-### Miguel Salas — Día 2
+### Miguel Salas — Día 4 (hoy · biney-debug)
+
+- [x] **Sistema de diseño completo:** Sora como fuente display, Inter body (Google Fonts)
+- [x] **Tokens CSS:** variables semánticas `--color-*`, `--space-*` con soporte light/dark en `:root` y `.dark`
+- [x] **Animación `kiru-pop`:** escala 0.8→1.08→1 + opacity al aparecer — aplicada automáticamente en estados CELEBRATE y CONFIRM
+- [x] **KiruState mejorado:** prop `key={state}` fuerza re-animación al cambiar estado, prop `animate` opcional para control manual
+- [x] **Kiru CELEBRATE en subida de nivel:** `ResiduoPage` detecta `result.levelUp` y muestra estado CELEBRATE en lugar de CONFIRM
+- [x] **Kiru WELCOME onboarding:** `DashboardPage` detecta usuario nuevo (`xpTotal === 0`) y muestra saludo personalizado con WELCOME
+- [x] **XP en amber:** barra de progreso y texto XP usan paleta `xp-*` (dorado/amber) en lugar de verde — diferencia XP de puntuación CO2
+- [x] **Tailwind extendido:** `fontFamily.display = Sora`, paleta `xp` (300/400/500/600/bg)
+- [x] **Fix proxy Vite:** corregido target `8080 → 8082` en los 7 endpoints del proxy (bug que causaba "error interno" al hacer login)
+- [x] **Auditoria funcional completa:** todos los endpoints verificados al 100% — solo falta deploy
+- [x] Pull commits remotos de Franck: toggle contraseña Kiru + dark/light flip + fix mobile historial
+
+### Miguel Salas — Día 3
 
 - [x] Autenticación JWT completa (`POST /auth/register`, `POST /auth/login`)
 - [x] Esquema BD con Flyway: usuarios, tipos_residuo, registros_reciclaje, insignias, niveles, conversaciones
@@ -107,7 +121,7 @@ Plataforma web de gamificación del reciclaje doméstico con agente de IA conver
 
 ## Pendiente
 
-### Infraestructura — Miguel (Días 4-5)
+### Infraestructura — Miguel (Día 5)
 
 - [x] Dockerfiles para backend y frontend listos
 - [x] `railway.toml` configurado en `backend/` y `frontend/`
@@ -121,16 +135,20 @@ Plataforma web de gamificación del reciclaje doméstico con agente de IA conver
   4. New Service > GitHub > root dir `frontend` — agregar var:
      `VITE_API_URL=https://<backend>.railway.app`
   5. Copiar URL frontend → actualizar `FRONTEND_URL` en backend
-- [ ] Cuenta demo pre-cargada con 15+ registros variados
-- [ ] Smoke test de todos los endpoints en producción
+- [ ] **Cuenta demo pre-cargada** con 15+ registros variados de todos los tipos (para la demo en vivo)
+- [ ] **Smoke test** en producción: todos los endpoints con la cuenta demo
 
-### Diseño — Franck (Días 3-4)
+> **Nota para compañeros:** Para levantar el backend en Windows necesitan pasar variables de entorno como `$env:` en PowerShell antes de `mvn spring-boot:run`. Ver sección Setup local. El proxy de Vite ya apunta al puerto 8082.
 
-- [x] QA visual completo: verificar que Kiru se ve bien en todas las pantallas y tamaños
+### Diseño — Franck (Día 5)
+
+- [x] QA visual completo: Kiru en todas las pantallas y tamaños
 - [x] Revisión mobile: formulario de registro, historial, perfil en pantallas pequeñas
-- [ ] Video demo 60 segundos mostrando el flujo completo (registro → XP → insignia → chat Kiru)
 - [x] Assets adicionales de Kiru: `kiru-luna.png` y `kiru-sol.png` para toggle dark/light
-- [x] Toggle dark/light rediseñado con silueta animada de Kiru (flip 3D al cambiar modo)
+- [x] Toggle dark/light con silueta animada de Kiru (flip 3D al cambiar modo)
+- [x] Toggle contraseña con Kiru tapándose los ojos en login
+- [x] Sistema de diseño integrado: Sora/Inter, tokens CSS, paleta xp amber, kiru-pop
+- [ ] **Video demo 60 segundos** mostrando flujo completo (registro → XP → insignia → chat Kiru)
 
 ### Presentación — Carlos (Días 3-5)
 
