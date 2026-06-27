@@ -21,15 +21,6 @@ import { deleteRegistro, getRegistros, getTiposResiduo, registrarResiduo } from 
 import { RegistroResponse } from '../types'
 import { formatKg, formatNumber } from '../utils/format'
 
-const RESIDUO_EMOJIS: Record<string, string> = {
-  PLASTICO: '🧴',
-  PAPEL: '📄',
-  VIDRIO: '🍶',
-  METAL: '🔩',
-  ORGANICO: '🌿',
-  ELECTRONICO: '💻',
-}
-
 const RESIDUO_ICONS: Record<string, LucideIcon> = {
   PLASTICO: Recycle,
   PAPEL: FileText,
@@ -269,9 +260,9 @@ export default function ResiduoPage() {
             <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 space-y-3">
               <h3 className="font-semibold text-gray-800 dark:text-gray-100">Historial de registros</h3>
               <div className="flex flex-wrap gap-2">
-                {Object.entries(RESIDUO_EMOJIS)
+                {Object.entries(RESIDUO_ICONS)
                   .filter(([codigo]) => historial.some(r => r.tipoResiduoCodigo === codigo))
-                  .map(([codigo, emoji]) => {
+                  .map(([codigo, Icon]) => {
                     const nombre = historial.find(r => r.tipoResiduoCodigo === codigo)?.tipoResiduo ?? codigo
                     const active = filtroTipo === codigo
                     return (
@@ -284,7 +275,7 @@ export default function ResiduoPage() {
                             : 'bg-gray-100 text-gray-600 hover:bg-eco-100 hover:text-eco-700 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                         }`}
                       >
-                        <span>{emoji}</span>
+                        <Icon size={14} />
                         {nombre}
                       </button>
                     )
