@@ -1,5 +1,5 @@
 import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
-import { type ReactNode, useState, useCallback, useEffect, useRef } from 'react'
+import { type ReactNode, useState, useCallback, useLayoutEffect, useRef } from 'react'
 import {
   LayoutDashboard,
   LogOut,
@@ -11,7 +11,7 @@ import { useAuthStore } from '../../store/authStore'
 import KiruChatWidget from '../kiru/KiruChatWidget'
 
 const links = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/registro', label: 'Residuos', icon: Recycle },
   { to: '/logros', label: 'Logros', icon: Trophy },
 ]
@@ -37,13 +37,34 @@ export default function Navbar() {
   const [kiruOpen, setKiruOpen] = useState(false)
   const location = useLocation()
   const navRef = useRef<HTMLDivElement>(null)
-  const [pill, setPill] = useState<{ left: number; width: number } | null>(null)
+  const pillSpanRef = useRef<HTMLSpanElement>(null)
+  const pillIsInit = useRef(false)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const container = navRef.current
-    if (!container) return
+    const span = pillSpanRef.current
+    if (!container || !span) return
+
     const active = container.querySelector<HTMLElement>('[aria-current="page"]')
-    if (active) setPill({ left: active.offsetLeft, width: active.offsetWidth })
+    if (!active) return
+
+    const left  = active.offsetLeft
+    const width = active.offsetWidth
+
+    if (!pillIsInit.current) {
+      // Primera vez: posicionar sin transición, luego habilitarla con reflow forzado
+      pillIsInit.current = true
+      span.style.transition = 'none'
+      span.style.left    = `${left}px`
+      span.style.width   = `${width}px`
+      span.style.opacity = '1'
+      void span.offsetWidth // fuerza reflow para que 'none' se aplique antes de re-habilitar
+      span.style.transition = 'left 340ms cubic-bezier(0.4,0,0.2,1), width 340ms cubic-bezier(0.4,0,0.2,1)'
+    } else {
+      // Navegaciones: el browser YA pintó la posición anterior con transición activa → anima
+      span.style.left  = `${left}px`
+      span.style.width = `${width}px`
+    }
   }, [location.pathname])
 
   const handleToggleTheme = useCallback(() => {
@@ -85,19 +106,23 @@ export default function Navbar() {
 
           <div className="overflow-x-auto scrollbar-none pb-0.5 lg:pb-0">
             <div ref={navRef} className="relative flex items-center gap-1 bg-eco-600 rounded-full px-2 py-1.5 shadow-lg w-max mx-auto">
-              {pill && (
-                <span
-                  className="absolute top-1.5 h-8 bg-white rounded-full pointer-events-none transition-all duration-300 ease-in-out"
-                  style={{ left: pill.left, width: pill.width }}
-                />
-              )}
-              {links.map(({ to, label, icon: Icon }) => (
+              <span
+                ref={pillSpanRef}
+                aria-hidden
+                className="absolute top-1.5 h-8 rounded-full pointer-events-none bg-white dark:bg-white/95"
+                style={{
+                  opacity:   0,
+                  boxShadow: '0 2px 10px 0 rgba(0,0,0,0.20), 0 0 0 1.5px rgba(255,255,255,0.30)',
+                }}
+              />
+              {links.map(({ to, label, icon: Icon, end }) => (
                 <NavLink
                   key={to}
                   to={to}
+                  end={end}
                   id={to === '/' ? 'nav-dashboard' : undefined}
                   className={({ isActive }) =>
-                    `relative flex h-8 items-center gap-1.5 rounded-full px-3 text-sm font-medium whitespace-nowrap transition-colors ${
+                    `relative flex h-8 flex-shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-medium whitespace-nowrap transition-colors ${
                       isActive ? 'text-eco-700' : 'text-white/90 hover:text-white'
                     }`
                   }

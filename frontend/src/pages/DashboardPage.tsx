@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react'
+import { type ReactNode, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   Cell,
@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from 'recharts'
 
-import { ArrowRight, BatteryCharging, Car, Flame, Leaf, Sprout, Zap } from 'lucide-react'
+import { ArrowRight, BatteryCharging, Car, Check, Download, Flame, Leaf, Share2, Sprout } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import KiruState from '../components/kiru/KiruState'
@@ -42,6 +42,9 @@ function SmallLegend({ payload }: { payload?: Array<{ color: string; value: stri
   )
 }
 
+const renderPieLabel = ({ percent }: { percent: number }) =>
+  percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
+
 export default function DashboardPage() {
   const { data: perfil, isLoading: loadingPerfil } = useQuery({ queryKey: ['perfil'], queryFn: getPerfil })
   const { data: resumen, isLoading: loadingResumen } = useQuery({
@@ -54,6 +57,7 @@ export default function DashboardPage() {
     queryFn: getImpactoPorTipo
   })
 
+  const sortedPorTipo = [...porTipo].sort((a, b) => b.co2Kg - a.co2Kg)
   const baseXp = getLevelBaseXp(perfil?.nivelActual ?? 1)
   const nextXp = perfil?.xpParaSiguienteNivel ?? null
   const progress = nextXp
@@ -61,6 +65,132 @@ export default function DashboardPage() {
     : 100
   const loading = loadingPerfil || loadingResumen || loadingPorTipo
   const isNewUser = !loadingPerfil && (perfil?.xpTotal ?? 0) === 0
+  const rachaActual = perfil?.rachaActual ?? 0
+  const [pdfState, setPdfState] = useState<'idle' | 'loading' | 'done'>('idle')
+
+  const compartirImpacto = async () => {
+    setPdfState('loading')
+    const { jsPDF } = await import('jspdf')
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' })
+    const W = 210
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    const col = (hex: string) => {
+      const r = parseInt(hex.slice(1,3),16)
+      const g = parseInt(hex.slice(3,5),16)
+      const b = parseInt(hex.slice(5,7),16)
+      return [r,g,b] as [number,number,number]
+    }
+    const card = (x: number, y: number, w: number, h: number, fill: string, stroke?: string) => {
+      doc.setFillColor(...col(fill))
+      if (stroke) { doc.setDrawColor(...col(stroke)); doc.setLineWidth(0.4) }
+      else doc.setDrawColor(255,255,255)
+      doc.roundedRect(x, y, w, h, 3, 3, stroke ? 'FD' : 'F')
+    }
+
+    // ── HEADER ───────────────────────────────────────────────────────────────
+    doc.setFillColor(...col('#16a34a'))
+    doc.rect(0, 0, W, 32, 'F')
+
+    doc.setFillColor(...col('#15803d'))
+    doc.rect(0, 29, W, 3, 'F')
+
+    doc.setTextColor(255,255,255)
+    doc.setFont('helvetica','bold')
+    doc.setFontSize(20)
+    doc.text('EcoLoop', 14, 17)
+    doc.setFont('helvetica','normal')
+    doc.setFontSize(9)
+    doc.text('Reporte de impacto ambiental', 14, 25)
+
+    const fecha = new Date().toLocaleDateString('es-PE',{day:'2-digit',month:'long',year:'numeric'})
+    doc.setFontSize(8)
+    doc.text(fecha, W-14, 17, { align:'right' })
+    doc.text(perfil?.nombre ?? '', W-14, 25, { align:'right' })
+
+    // ── HERO RACHA ───────────────────────────────────────────────────────────
+    card(14, 40, W-28, 68, '#fff7ed', '#fed7aa')          // fondo ámbar claro
+
+    doc.setFillColor(...col('#ea580c'))
+    doc.rect(14, 40, W-28, 6, 'F')                         // acento naranja arriba
+
+    doc.setFont('helvetica','bold')
+    doc.setFontSize(9)
+    doc.setTextColor(...col('#9a3412'))
+    doc.text('RACHA ACTUAL', W/2, 55, { align:'center' })
+
+    doc.setFont('helvetica','bold')
+    doc.setFontSize(72)
+    doc.setTextColor(...col('#ea580c'))
+    doc.text(String(rachaActual), W/2, 90, { align:'center' })
+
+    doc.setFont('helvetica','normal')
+    doc.setFontSize(12)
+    doc.setTextColor(...col('#c2410c'))
+    doc.text(rachaActual === 1 ? 'DIA CONSECUTIVO' : 'DIAS CONSECUTIVOS', W/2, 101, { align:'center' })
+
+    // ── METRICAS ─────────────────────────────────────────────────────────────
+    const mY = 118
+    card(14, mY, 86, 34, '#f0fdf4', '#bbf7d0')
+    card(110, mY, 86, 34, '#f0fdf4', '#bbf7d0')
+
+    const metricLabel = (x: number, y: number, label: string) => {
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...col('#6b7280'))
+      doc.text(label, x, y, { align:'center' })
+    }
+    const metricValue = (x: number, y: number, value: string) => {
+      doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.setTextColor(...col('#15803d'))
+      doc.text(value, x, y, { align:'center' })
+    }
+
+    metricLabel(57, mY+10, 'CO2 EVITADO')
+    metricValue(57, mY+24, formatKg(resumen?.co2TotalKg ?? perfil?.co2TotalEvitadoKg, 1))
+    metricLabel(153, mY+10, 'TOTAL RECICLADO')
+    metricValue(153, mY+24, formatKg(resumen?.kgTotalReciclado, 1))
+
+    // ── EQUIVALENCIAS ────────────────────────────────────────────────────────
+    const eY = 162
+    card(14, eY, W-28, 66, '#f8fafc', '#e2e8f0')
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...col('#1e293b'))
+    doc.text('Equivalencias ambientales', 22, eY+11)
+
+    doc.setDrawColor(...col('#e2e8f0')); doc.setLineWidth(0.3)
+    doc.line(22, eY+15, W-22, eY+15)
+
+    const eqRow = (y: number, label: string, value: string) => {
+      doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...col('#374151'))
+      doc.text(label, 22, y)
+      doc.setFont('helvetica','bold'); doc.setTextColor(...col('#16a34a'))
+      doc.text(value, W-22, y, { align:'right' })
+    }
+    eqRow(eY+26, 'Arboles por año equivalentes',  formatNumber(resumen?.equivalenteArboles,2))
+    eqRow(eY+40, 'Km de auto evitados',            formatNumber(resumen?.equivalenteKmAuto,1))
+    eqRow(eY+54, 'Cargas de telefono equivalentes',formatNumber(resumen?.equivalenteCargasTelefono,0))
+
+    // ── XP / NIVEL ───────────────────────────────────────────────────────────
+    const xY = 238
+    card(14, xY, W-28, 22, '#fefce8', '#fde68a')
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...col('#92400e'))
+    doc.text('NIVEL ACTUAL', 22, xY+9)
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...col('#b45309'))
+    doc.text(perfil?.nombreNivel ?? `Nivel ${perfil?.nivelActual ?? 1}`, 22, xY+17)
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...col('#92400e'))
+    doc.text('XP TOTAL', W-22, xY+9, { align:'right' })
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...col('#b45309'))
+    doc.text(`${perfil?.xpTotal ?? 0} XP`, W-22, xY+17, { align:'right' })
+
+    // ── FOOTER ───────────────────────────────────────────────────────────────
+    doc.setDrawColor(...col('#e5e7eb')); doc.setLineWidth(0.3)
+    doc.line(14, 278, W-14, 278)
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...col('#9ca3af'))
+    doc.text('Generado con EcoLoop  ·  ecoloop.app', W/2, 284, { align:'center' })
+    doc.text(fecha, W/2, 290, { align:'center' })
+
+    doc.save(`ecoloop-impacto-${new Date().toISOString().slice(0,10)}.pdf`)
+    setPdfState('done')
+    setTimeout(() => setPdfState('idle'), 2500)
+  }
 
   return (
     <div className="min-h-screen bg-eco-50 dark:bg-gray-900">
@@ -69,7 +199,7 @@ export default function DashboardPage() {
         <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
             <KiruState state={isNewUser ? 'WELCOME' : 'IMPACT'} size={106} animate />
-            <div>
+            <div className="min-w-0">
               <h2 className="font-display text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
                 {isNewUser
                   ? `Hola, ${perfil?.nombre ?? 'reciclador'}! Soy Kiru, tu asesor de reciclaje.`
@@ -80,6 +210,17 @@ export default function DashboardPage() {
                   ? 'Registra tu primer residuo y empieza a ganar XP.'
                   : `${perfil?.nombreNivel ?? 'Cargando nivel'} - ${formatNumber(progress, 0)}% al siguiente tramo`}
               </p>
+              {!isNewUser && (
+                <div className="mt-2 w-full max-w-xs">
+                  <div className="h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                    <div className="h-full bg-eco-600 transition-all" style={{ width: `${progress}%` }} />
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400 mt-0.5">
+                    <span>{perfil?.xpTotal ?? 0} XP</span>
+                    <span>{nextXp ? `${nextXp} XP` : 'Nivel máximo'}</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <Link
@@ -91,20 +232,7 @@ export default function DashboardPage() {
           </Link>
         </section>
 
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            icon={<Zap size={24} className="text-xp-500" />}
-            label="XP total"
-            value={String(perfil?.xpTotal ?? 0)}
-            loading={loadingPerfil}
-            accent
-          />
-          <StatCard
-            icon={<Flame size={24} className="text-orange-500" />}
-            label="Racha actual"
-            value={`${perfil?.rachaActual ?? 0} dias`}
-            loading={loadingPerfil}
-          />
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard
             icon={<Leaf size={24} className="text-eco-500" />}
             label="CO2 evitado"
@@ -112,8 +240,15 @@ export default function DashboardPage() {
             loading={loadingResumen}
           />
           <StatCard
+            icon={<Flame size={24} className="text-orange-500" />}
+            label="Racha actual"
+            value={rachaActual === 1 ? '1 día' : `${rachaActual} días`}
+            loading={loadingPerfil}
+            featured
+          />
+          <StatCard
             icon={<Sprout size={24} className="text-emerald-500" />}
-            label="Kg reciclados"
+            label="Total reciclado"
             value={formatKg(resumen?.kgTotalReciclado, 1)}
             loading={loadingResumen}
           />
@@ -126,21 +261,23 @@ export default function DashboardPage() {
                 <h3 className="font-semibold text-gray-800 dark:text-gray-100">Impacto por tipo de residuo</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">CO2 evitado por cada tipo registrado</p>
               </div>
-              <span className="text-xs font-medium text-gray-400">{porTipo.length} tipos</span>
+              <span className="text-xs font-medium text-gray-400">{sortedPorTipo.length} tipos</span>
             </div>
-            {porTipo.length ? (
+            {sortedPorTipo.length ? (
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={porTipo}
+                      data={sortedPorTipo}
                       dataKey="co2Kg"
                       nameKey="tipoResiduo"
                       cx="50%"
                       cy="50%"
                       outerRadius={90}
+                      label={renderPieLabel}
+                      labelLine={false}
                     >
-                      {porTipo.map((entry: { codigo: string }, i: number) => (
+                      {sortedPorTipo.map((entry: { codigo: string }, i: number) => (
                         <Cell key={entry.codigo} fill={getColor(entry.codigo, i)} />
                       ))}
                     </Pie>
@@ -150,7 +287,7 @@ export default function DashboardPage() {
                 </ResponsiveContainer>
               </div>
             ) : (
-              <EmptyState loading={loading} text="Registra tu primer residuo para ver el grafico." />
+              <EmptyState loading={loading} text="Registra tu primer residuo para ver el gráfico." />
             )}
           </div>
 
@@ -159,7 +296,7 @@ export default function DashboardPage() {
             <div className="space-y-3">
               <ImpactRow
                 icon={<Sprout size={18} />}
-                label="Arboles por ano"
+                label="Árboles por año"
                 value={formatNumber(resumen?.equivalenteArboles, 2)}
               />
               <ImpactRow
@@ -169,22 +306,24 @@ export default function DashboardPage() {
               />
               <ImpactRow
                 icon={<BatteryCharging size={18} />}
-                label="Cargas de telefono"
+                label="Cargas de teléfono"
                 value={formatNumber(resumen?.equivalenteCargasTelefono, 0)}
               />
             </div>
 
-            <div className="mt-6">
-              <div className="flex justify-between text-sm mb-2">
-                <span className="font-medium text-gray-700 dark:text-gray-300">{perfil?.nombreNivel ?? 'Nivel'}</span>
-                <span className="text-gray-500 dark:text-gray-400">
-                  {nextXp ? `${perfil?.xpTotal ?? 0}/${nextXp} XP` : 'Nivel maximo'}
-                </span>
-              </div>
-              <div className="h-3 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
-                <div className="h-full bg-eco-600 transition-all" style={{ width: `${progress}%` }} />
-              </div>
-            </div>
+            <button
+              onClick={compartirImpacto}
+              disabled={pdfState === 'loading'}
+              className={`mt-5 w-full flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all duration-300 disabled:opacity-60
+                ${pdfState === 'done'
+                  ? 'border-eco-500 bg-eco-50 text-eco-700 dark:border-eco-500 dark:bg-eco-900/30 dark:text-eco-400'
+                  : 'border-gray-200 bg-transparent text-gray-600 hover:border-eco-400 hover:text-eco-600 hover:bg-eco-50 dark:border-gray-600 dark:text-gray-300 dark:hover:border-eco-500 dark:hover:text-eco-400 dark:hover:bg-eco-900/20'
+                }`}
+            >
+              {pdfState === 'done'  && <><Check    size={15} className="flex-shrink-0" /> ¡PDF descargado!</>}
+              {pdfState === 'loading' && <><Share2 size={15} className="flex-shrink-0 animate-spin" /> Generando PDF...</>}
+              {pdfState === 'idle'  && <><Download  size={15} className="flex-shrink-0" /> Descargar mi impacto</>}
+            </button>
           </div>
         </section>
 
@@ -198,25 +337,33 @@ function StatCard({
   label,
   loading,
   value,
-  accent = false
+  featured = false,
 }: {
   icon: ReactNode
   label: string
   loading?: boolean
   value: string
-  accent?: boolean
+  featured?: boolean
 }) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+    <div className={`rounded-lg p-5 shadow-sm border transition-transform ${
+      featured
+        ? 'scale-105 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/30 dark:to-gray-800 border-orange-200 dark:border-orange-800 shadow-[0_0_18px_3px_rgba(249,115,22,0.18)]'
+        : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'
+    }`}>
       <div className="flex items-center gap-3">
-        <div className={`flex h-11 w-11 items-center justify-center rounded-lg ${accent ? 'bg-xp-bg dark:bg-gray-700' : 'bg-gray-50 dark:bg-gray-700'}`}>
+        <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg ${
+          featured ? 'bg-orange-100 dark:bg-orange-900/40' : 'bg-gray-50 dark:bg-gray-700'
+        }`}>
           {icon}
         </div>
         <div className="min-w-0">
-          <div className={`font-display text-2xl font-bold tracking-tight ${accent ? 'text-xp-600 dark:text-xp-400' : 'text-eco-700 dark:text-eco-400'}`}>
+          <div className={`font-display text-2xl font-bold tracking-tight leading-tight ${
+            featured ? 'text-orange-600 dark:text-orange-400' : 'text-eco-700 dark:text-eco-400'
+          }`}>
             {loading ? '...' : value}
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400 leading-tight">{label}</div>
         </div>
       </div>
     </div>

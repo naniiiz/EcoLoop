@@ -1,4 +1,4 @@
-import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from 'react'
+import { type FormEvent, type ReactNode, useEffect, useRef, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   CheckCircle2,
@@ -45,6 +45,10 @@ export default function ResiduoPage() {
   const [cantidad, setCantidad] = useState('0.5')
   const [result, setResult] = useState<RegistroResponse | null>(null)
   const [filtroTipo, setFiltroTipo] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ tipo: string; xp: number; levelUp: boolean } | null>(null)
+  const [flash, setFlash] = useState(false)
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { data, isError, isLoading } = useQuery({
     queryKey: ['tipos-residuo'],
@@ -74,6 +78,12 @@ export default function ResiduoPage() {
     mutationFn: registrarResiduo,
     onSuccess: data => {
       setResult(data)
+      if (toastTimer.current) clearTimeout(toastTimer.current)
+      setToast({ tipo: data.tipoResiduo, xp: data.xpGanado, levelUp: data.levelUp })
+      toastTimer.current = setTimeout(() => setToast(null), 3500)
+      setFlash(true)
+      if (flashTimer.current) clearTimeout(flashTimer.current)
+      flashTimer.current = setTimeout(() => setFlash(false), 1400)
       void queryClient.invalidateQueries({ queryKey: ['perfil'] })
       void queryClient.invalidateQueries({ queryKey: ['impacto-resumen'] })
       void queryClient.invalidateQueries({ queryKey: ['impacto-mensual'] })
@@ -93,6 +103,10 @@ export default function ResiduoPage() {
       void queryClient.invalidateQueries({ queryKey: ['perfil'] })
     }
   })
+
+  const resetResult = () => {
+    if (result) { setResult(null); setFlash(false) }
+  }
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
@@ -140,7 +154,7 @@ export default function ResiduoPage() {
                       key={tipo.id}
                       type="button"
                       aria-pressed={active}
-                      onClick={() => setTipoResiduoId(tipo.id)}
+                      onClick={() => { setTipoResiduoId(tipo.id); resetResult() }}
                       className={`min-h-24 rounded-lg border p-3 text-left transition-colors ${
                         active
                           ? 'border-eco-500 bg-eco-50 text-eco-800 dark:bg-gray-700 dark:text-eco-400'
@@ -169,7 +183,7 @@ export default function ResiduoPage() {
                   step="0.01"
                   inputMode="decimal"
                   value={cantidad}
-                  onChange={event => setCantidad(event.target.value)}
+                  onChange={event => { setCantidad(event.target.value); resetResult() }}
                   className="w-full bg-transparent text-lg font-semibold text-gray-900 dark:text-white focus:outline-none"
                 />
                 <span className="text-sm text-gray-500">kg</span>
@@ -198,7 +212,7 @@ export default function ResiduoPage() {
             </button>
           </form>
 
-          <aside className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm">
+          <aside className={`bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm border border-transparent ${flash ? 'flash-confirm' : ''}`}>
             <div className="flex items-center gap-3 mb-5">
               <KiruState state={result ? (result.levelUp ? 'CELEBRATE' : 'CONFIRM') : 'IMPACT'} size={77} animate />
               <div>
@@ -242,9 +256,9 @@ export default function ResiduoPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                <ResultRow icon={<Leaf size={18} />} label="Factor CO2" value={`${formatNumber(selected?.factorCo2Kg, 2)} kg/kg`} />
-                <ResultRow icon={<Trophy size={18} />} label="XP por kg" value={`${selected?.xpPorKg ?? 0} XP`} />
                 <ResultRow icon={<Scale size={18} />} label="Cantidad" value={validAmount ? formatKg(cantidadKg, 2) : 'Pendiente'} />
+                <ResultRow icon={<Leaf size={18} />} label="CO2 estimado" value={validAmount ? formatKg(co2Preview, 2) : '—'} />
+                <ResultRow icon={<Trophy size={18} />} label="XP estimado" value={validAmount ? `${xpPreview} XP` : '—'} />
               </div>
             )}
           </aside>
@@ -308,6 +322,38 @@ export default function ResiduoPage() {
           </section>
         )}
       </main>
+
+      {/* Toast de confirmación */}
+      <div
+        aria-live="polite"
+        className={`fixed bottom-6 left-1/2 z-50 flex items-center gap-3 rounded-xl px-5 py-3.5 shadow-xl
+          transition-all duration-500 ease-in-out
+          ${toast
+            ? '-translate-x-1/2 translate-y-0 opacity-100'
+            : '-translate-x-1/2 translate-y-16 opacity-0 pointer-events-none'
+          }
+          ${toast?.levelUp
+            ? 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white'
+            : 'bg-eco-600 text-white dark:bg-eco-700'
+          }`}
+      >
+        <span className="text-xl">{toast?.levelUp ? '🏆' : '♻️'}</span>
+        <div className="leading-tight">
+          <p className="text-sm font-bold">
+            {toast?.levelUp ? '¡Subiste de nivel!' : '¡Residuo registrado!'}
+          </p>
+          <p className="text-xs opacity-90">
+            {toast?.tipo} · +{toast?.xp} XP
+          </p>
+        </div>
+        <button
+          onClick={() => setToast(null)}
+          className="ml-2 rounded-full p-1 hover:bg-white/20 transition-colors text-white/80 hover:text-white"
+          aria-label="Cerrar"
+        >
+          ✕
+        </button>
+      </div>
     </div>
   )
 }
