@@ -6,6 +6,17 @@ import KiruState from '../components/kiru/KiruState'
 import { getImpactoMensual, getImpactoResumen, getPerfil, getTiposResiduo, updatePerfil } from '../services/ecoloop'
 import { formatKg, formatNumber } from '../utils/format'
 
+const diasStr = (n: number) => n === 1 ? '1 día' : `${n} días`
+
+const formatMes = (mes: string) => {
+  if (!mes || mes === 'Sin datos') return mes
+  const [year, month] = mes.split('-')
+  if (!year || !month) return mes
+  const label = new Date(Number(year), Number(month) - 1, 1)
+    .toLocaleDateString('es-PE', { month: 'long', year: 'numeric' })
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
+
 export default function PerfilHabitosPage() {
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)
@@ -25,14 +36,13 @@ export default function PerfilHabitosPage() {
 
   const habits = useMemo(() => {
     const months = mensual.length
-    const totalKg = mensual.reduce((sum, item) => sum + item.kgReciclado, 0)
+    const totalKg  = mensual.reduce((sum, item) => sum + item.kgReciclado, 0)
     const totalCo2 = mensual.reduce((sum, item) => sum + item.co2Kg, 0)
     const bestMonth = mensual.reduce(
       (best, item) => (item.co2Kg > best.co2Kg ? item : best),
       mensual[0] ?? { mes: 'Sin datos', co2Kg: 0, kgReciclado: 0, xpGanado: 0 }
     )
     const highImpactType = [...tipos].sort((a, b) => Number(b.factorCo2Kg) - Number(a.factorCo2Kg))[0]
-
     return {
       avgKg: months ? totalKg / months : 0,
       avgCo2: months ? totalCo2 / months : 0,
@@ -69,11 +79,12 @@ export default function PerfilHabitosPage() {
     <div className="min-h-screen bg-eco-50 dark:bg-gray-900">
       <Navbar />
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+
         <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <KiruState state="ANALYZE" size={96} animate />
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Perfil de habitos</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Perfil de hábitos</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {perfil?.nombre ?? 'Usuario'} - {perfil?.nombreNivel ?? 'Nivel actual'}
               </p>
@@ -143,8 +154,8 @@ export default function PerfilHabitosPage() {
           <ProfileCard
             icon={<Activity size={22} />}
             label="Racha actual"
-            value={`${perfil?.rachaActual ?? 0} dias`}
-            detail={`Mejor: ${perfil?.mejorRacha ?? 0} dias`}
+            value={diasStr(perfil?.rachaActual ?? 0)}
+            detail={`Mejor: ${diasStr(perfil?.mejorRacha ?? 0)}`}
             loading={loadingPerfil}
           />
           <ProfileCard
@@ -165,7 +176,7 @@ export default function PerfilHabitosPage() {
 
         <section className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm">
-            <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4">Lectura de habitos</h3>
+            <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4">Lectura de hábitos</h3>
             <div className="space-y-3">
               <InsightRow
                 icon={<Scale size={18} />}
@@ -175,8 +186,8 @@ export default function PerfilHabitosPage() {
               />
               <InsightRow
                 icon={<CalendarDays size={18} />}
-                title="Mes mas fuerte"
-                value={habits.bestMonth.mes}
+                title="Mes más fuerte"
+                value={formatMes(habits.bestMonth.mes)}
                 detail={`${formatKg(habits.bestMonth.co2Kg, 1)} CO2`}
               />
               <InsightRow
@@ -192,7 +203,7 @@ export default function PerfilHabitosPage() {
             <div className="flex items-center gap-3 mb-4">
               <KiruState state="ANALYZE" size={64} />
               <div>
-                <h3 className="font-semibold text-gray-800 dark:text-gray-100">Senales de Kiru</h3>
+                <h3 className="font-semibold text-gray-800 dark:text-gray-100">Señales de Kiru</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {loading ? 'Cargando datos...' : 'Basado en tus registros actuales'}
                 </p>
@@ -200,13 +211,17 @@ export default function PerfilHabitosPage() {
             </div>
             <div className="space-y-3">
               <KiruSignal
+                type="streak"
+                emoji="🔥"
                 text={
                   (perfil?.rachaActual ?? 0) > 0
-                    ? `Racha activa de ${perfil?.rachaActual ?? 0} dias. Mantener ritmo suma XP constante.`
+                    ? `Racha activa de ${diasStr(perfil?.rachaActual ?? 0)}. Mantener ritmo suma XP constante.`
                     : 'Primer registro pendiente. Un registro hoy activa racha y XP.'
                 }
               />
               <KiruSignal
+                type="goal"
+                emoji="🎯"
                 text={
                   (resumen?.kgTotalReciclado ?? 0) >= (perfil?.metaSemanalKg ?? 0)
                     ? 'Meta semanal base ya superada con tu acumulado registrado.'
@@ -214,10 +229,12 @@ export default function PerfilHabitosPage() {
                 }
               />
               <KiruSignal
+                type="tip"
+                emoji="💡"
                 text={
                   habits.highImpactType
-                    ? `${habits.highImpactType.nombre} tiene mayor CO2 evitado por kg en el catalogo.`
-                    : 'Catalogo de residuos pendiente de cargar.'
+                    ? `${habits.highImpactType.nombre} tiene mayor CO2 evitado por kg en el catálogo.`
+                    : 'Catálogo de residuos pendiente de cargar.'
                 }
               />
             </div>
@@ -232,7 +249,7 @@ export default function PerfilHabitosPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {mensual.map(item => (
               <div key={item.mes} className="rounded-lg border border-gray-100 p-4 dark:border-gray-700">
-                <div className="font-semibold text-gray-900 dark:text-white">{item.mes}</div>
+                <div className="font-semibold text-gray-900 dark:text-white">{formatMes(item.mes)}</div>
                 <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                   {formatKg(item.kgReciclado, 1)} reciclados
                 </div>
@@ -243,28 +260,21 @@ export default function PerfilHabitosPage() {
             ))}
             {!loading && mensual.length === 0 && (
               <div className="col-span-full rounded-lg border border-dashed border-gray-200 p-6 text-center text-sm text-gray-400 dark:border-gray-700">
-                Aun no hay meses con registros.
+                Aún no hay meses con registros.
               </div>
             )}
           </div>
         </section>
+
       </main>
     </div>
   )
 }
 
 function ProfileCard({
-  detail,
-  icon,
-  label,
-  loading,
-  value
+  detail, icon, label, loading, value
 }: {
-  detail: string
-  icon: ReactNode
-  label: string
-  loading?: boolean
-  value: string
+  detail: string; icon: ReactNode; label: string; loading?: boolean; value: string
 }) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm">
@@ -283,34 +293,48 @@ function ProfileCard({
 }
 
 function InsightRow({
-  detail,
-  icon,
-  title,
-  value
+  detail, icon, title, value
 }: {
-  detail: string
-  icon: ReactNode
-  title: string
-  value: string
+  detail: string; icon: ReactNode; title: string; value: string
 }) {
   return (
     <div className="flex items-center justify-between gap-3 rounded-lg border border-gray-100 p-3 dark:border-gray-700">
       <div className="flex items-center gap-2 min-w-0">
-        <span className="text-eco-600 dark:text-eco-400">{icon}</span>
+        <span className="text-eco-600 dark:text-eco-400 flex-shrink-0">{icon}</span>
         <div className="min-w-0">
-          <div className="text-sm font-semibold text-gray-800 dark:text-gray-100">{title}</div>
-          <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{detail}</div>
+          <div className="text-sm font-medium text-gray-700 dark:text-gray-200">{title}</div>
+          <div className="text-[11px] text-gray-400 dark:text-gray-500 truncate">{detail}</div>
         </div>
       </div>
-      <span className="text-sm font-semibold text-gray-900 dark:text-white text-right">{value}</span>
+      <span className="text-sm font-bold text-gray-900 dark:text-white text-right shrink-0">{value}</span>
     </div>
   )
 }
 
-function KiruSignal({ text }: { text: string }) {
+const signalStyles = {
+  streak: {
+    border:  'border-l-orange-400',
+    bg:      'bg-orange-50 dark:bg-orange-950/20',
+    text:    'text-orange-900 dark:text-orange-200',
+  },
+  goal: {
+    border:  'border-l-blue-400',
+    bg:      'bg-blue-50 dark:bg-blue-950/20',
+    text:    'text-blue-900 dark:text-blue-200',
+  },
+  tip: {
+    border:  'border-l-eco-500',
+    bg:      'bg-eco-50 dark:bg-eco-900/20',
+    text:    'text-eco-900 dark:text-eco-200',
+  },
+} as const
+
+function KiruSignal({ emoji, text, type }: { emoji: string; text: string; type: keyof typeof signalStyles }) {
+  const s = signalStyles[type]
   return (
-    <div className="rounded-lg bg-gray-50 p-3 text-sm text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-      {text}
+    <div className={`flex items-start gap-2.5 rounded-lg border-l-4 p-3 ${s.border} ${s.bg}`}>
+      <span className="text-base leading-snug flex-shrink-0">{emoji}</span>
+      <p className={`text-sm leading-snug ${s.text}`}>{text}</p>
     </div>
   )
 }
