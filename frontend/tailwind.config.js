@@ -4,6 +4,10 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        display: ['Sora', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans:    ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
       colors: {
         eco: {
           50:  '#f0fdf4',
@@ -16,9 +20,16 @@ export default {
           700: '#15803d',
           800: '#166534',
           900: '#14532d',
-        }
-      }
-    }
+        },
+        xp: {
+          300: '#fcd34d',
+          400: '#fbbf24',
+          500: '#f59e0b',
+          600: '#d97706',
+          bg:  '#fffbeb',
+        },
+      },
+    },
   },
-  plugins: []
+  plugins: [],
 }

@@ -56,7 +56,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between gap-3">
           <Link to="/" className="flex items-center gap-2 min-w-0">
             <img src="/kiru/castor-botella.webp" alt="Kiru" width={32} height={32} className="object-contain" />
-            <span className="text-xl font-bold text-eco-700 dark:text-eco-400">EcoLoop</span>
+            <span className="font-display text-xl font-bold text-eco-700 dark:text-eco-400 tracking-tight">EcoLoop</span>
           </Link>
           <div className="flex items-center gap-2 lg:hidden">
             <IconButton onClick={handleToggleTheme} title="Cambiar tema" extraClass="dark:bg-[#1f2937] dark:hover:bg-[#1f2937]">

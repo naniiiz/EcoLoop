@@ -37,6 +37,7 @@ export default function DashboardPage() {
     ? clampPercent((((perfil?.xpTotal ?? 0) - baseXp) / (nextXp - baseXp)) * 100)
     : 100
   const loading = loadingPerfil || loadingResumen || loadingMensual || loadingPorTipo
+  const isNewUser = !loadingPerfil && (perfil?.xpTotal ?? 0) === 0
 
   return (
     <div className="min-h-screen bg-eco-50 dark:bg-gray-900">
@@ -44,13 +45,17 @@ export default function DashboardPage() {
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
         <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
-            <KiruState state="IMPACT" size={88} />
+            <KiruState state={isNewUser ? 'WELCOME' : 'IMPACT'} size={88} />
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Hola, {perfil?.nombre ?? 'reciclador'}
+              <h2 className="font-display text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                {isNewUser
+                  ? `Hola, ${perfil?.nombre ?? 'reciclador'}! Soy Kiru, tu asesor de reciclaje.`
+                  : `Hola, ${perfil?.nombre ?? 'reciclador'}`}
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {perfil?.nombreNivel ?? 'Cargando nivel'} - {formatNumber(progress, 0)}% al siguiente tramo
+                {isNewUser
+                  ? 'Registra tu primer residuo y empieza a ganar XP.'
+                  : `${perfil?.nombreNivel ?? 'Cargando nivel'} - ${formatNumber(progress, 0)}% al siguiente tramo`}
               </p>
             </div>
           </div>
@@ -65,10 +70,11 @@ export default function DashboardPage() {
 
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            icon={<Zap size={24} className="text-yellow-500" />}
+            icon={<Zap size={24} className="text-xp-500" />}
             label="XP total"
             value={String(perfil?.xpTotal ?? 0)}
             loading={loadingPerfil}
+            accent
           />
           <StatCard
             icon={<Flame size={24} className="text-orange-500" />}
@@ -121,7 +127,7 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm border border-gray-100 dark:border-gray-700">
             <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4">Equivalencias</h3>
             <div className="space-y-3">
               <ImpactRow
@@ -196,21 +202,23 @@ function StatCard({
   icon,
   label,
   loading,
-  value
+  value,
+  accent = false
 }: {
   icon: ReactNode
   label: string
   loading?: boolean
   value: string
+  accent?: boolean
 }) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm">
+    <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm border border-gray-100 dark:border-gray-700">
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-gray-50 dark:bg-gray-700">
+        <div className={`flex h-11 w-11 items-center justify-center rounded-lg ${accent ? 'bg-xp-bg dark:bg-gray-700' : 'bg-gray-50 dark:bg-gray-700'}`}>
           {icon}
         </div>
         <div className="min-w-0">
-          <div className="text-2xl font-bold text-eco-700 dark:text-eco-400">
+          <div className={`font-display text-2xl font-bold tracking-tight ${accent ? 'text-xp-600 dark:text-xp-400' : 'text-eco-700 dark:text-eco-400'}`}>
             {loading ? '...' : value}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>

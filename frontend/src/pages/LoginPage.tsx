@@ -55,7 +55,7 @@ export default function LoginPage() {
               style={{ opacity: showPassword ? 1 : 0 }}
             />
           </div>
-          <h1 className="text-3xl font-bold text-eco-700 dark:text-eco-400">EcoLoop</h1>
+          <h1 className="font-display text-3xl font-bold tracking-tight text-eco-700 dark:text-eco-400">EcoLoop</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">IA que gamifica tu reciclaje</p>
         </div>
 

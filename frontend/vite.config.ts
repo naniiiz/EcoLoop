@@ -6,13 +6,13 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/auth':        'http://localhost:8080',
-      '/agente':      'http://localhost:8080',
-      '/residuos':    'http://localhost:8080',
-      '/tipos-residuo':'http://localhost:8080',
-      '/gamificacion':'http://localhost:8080',
-      '/impacto':     'http://localhost:8080',
-      '/usuarios':    'http://localhost:8080',
+      '/auth':        'http://localhost:8082',
+      '/agente':      'http://localhost:8082',
+      '/residuos':    'http://localhost:8082',
+      '/tipos-residuo':'http://localhost:8082',
+      '/gamificacion':'http://localhost:8082',
+      '/impacto':     'http://localhost:8082',
+      '/usuarios':    'http://localhost:8082',
     }
   }
 })

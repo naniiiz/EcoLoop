@@ -95,9 +95,9 @@ export default function ResiduoPage() {
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
         <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
-            <KiruState state={result ? 'CONFIRM' : 'WELCOME'} size={88} />
+            <KiruState state={result ? (result.levelUp ? 'CELEBRATE' : 'CONFIRM') : 'WELCOME'} size={88} />
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Registrar residuo</h2>
+              <h2 className="font-display text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Registrar residuo</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 CO2 y XP se calculan al guardar.
               </p>
@@ -168,7 +168,7 @@ export default function ResiduoPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <PreviewBox label="CO2 estimado" value={formatKg(co2Preview, 2)} />
-              <PreviewBox label="XP estimado" value={`${xpPreview} XP`} />
+              <PreviewBox label="XP estimado" value={`${xpPreview} XP`} accent />
             </div>
 
             {mutation.error && (
@@ -189,7 +189,7 @@ export default function ResiduoPage() {
 
           <aside className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm">
             <div className="flex items-center gap-3 mb-5">
-              <KiruState state={result ? 'CONFIRM' : 'IMPACT'} size={64} />
+              <KiruState state={result ? (result.levelUp ? 'CELEBRATE' : 'CONFIRM') : 'IMPACT'} size={64} />
               <div>
                 <h3 className="font-semibold text-gray-800 dark:text-gray-100">
                   {result ? 'Registro confirmado' : 'Vista previa'}
@@ -274,11 +274,11 @@ export default function ResiduoPage() {
   )
 }
 
-function PreviewBox({ label, value }: { label: string; value: string }) {
+function PreviewBox({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
       <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>
-      <div className="mt-1 text-xl font-bold text-eco-700 dark:text-eco-400">{value}</div>
+      <div className={`font-display mt-1 text-xl font-bold tracking-tight ${accent ? 'text-xp-600 dark:text-xp-400' : 'text-eco-700 dark:text-eco-400'}`}>{value}</div>
     </div>
   )
 }

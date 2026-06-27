@@ -52,7 +52,7 @@ export default function GamificacionPage() {
           <div className="flex items-center gap-4">
             <KiruState state="CELEBRATE" size={96} />
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Gamificacion</h2>
+              <h2 className="font-display text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Gamificacion</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {desbloqueadas.length}/{insignias.length || 8} insignias desbloqueadas
               </p>
@@ -77,13 +77,13 @@ export default function GamificacionPage() {
             </div>
 
             <div className="mb-2 flex justify-between text-sm">
-              <span className="font-medium text-gray-700 dark:text-gray-300">{perfil?.xpTotal ?? 0} XP</span>
+              <span className="font-semibold text-xp-600 dark:text-xp-400">{perfil?.xpTotal ?? 0} XP</span>
               <span className="text-gray-500 dark:text-gray-400">
                 {nextXp ? `${nextXp} XP` : 'Nivel maximo'}
               </span>
             </div>
             <div className="h-4 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
-              <div className="h-full bg-eco-600 transition-all" style={{ width: `${progress}%` }} />
+              <div className="h-full bg-xp-500 transition-all" style={{ width: `${progress}%` }} />
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-3">

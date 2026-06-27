@@ -1,42 +1,166 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-50 transition-colors duration-200;
+/* ===========================================================================
+   EcoLoop — Design tokens
+   =========================================================================== */
+:root {
+  /* eco green ramp */
+  --eco-50:  #f0fdf4;
+  --eco-100: #dcfce7;
+  --eco-500: #22c55e;
+  --eco-600: #16a34a;
+  --eco-700: #15803d;
+
+  /* sky blue ramp (dark mode accent) */
+  --sky-400: #38bdf8;
+  --sky-500: #0ea5e9;
+  --sky-600: #0284c7;
+  --sky-700: #0369a1;
+
+  /* gamification — XP / streak / level */
+  --xp-300: #fcd34d;
+  --xp-400: #fbbf24;
+  --xp-500: #f59e0b;
+  --xp-600: #d97706;
+  --xp-bg:  #fffbeb;
+
+  /* semantic support */
+  --flame:   #f97316;
+  --emerald: #10b981;
+  --danger:  #ef4444;
+  --danger-bg: #fef2f2;
+
+  /* semantic aliases — light mode */
+  --color-primary:       var(--eco-600);
+  --color-primary-hover: var(--eco-700);
+  --color-primary-soft:  var(--eco-100);
+  --color-primary-tint:  var(--eco-50);
+  --color-primary-text:  var(--eco-700);
+  --color-on-primary:    #ffffff;
+
+  --bg-app:         var(--eco-50);
+  --surface-card:   #ffffff;
+  --surface-sunken: #f9fafb;
+  --border-card:    #f3f4f6;
+  --border-input:   #e5e7eb;
+
+  --text-strong: #111827;
+  --text-body:   #4b5563;
+  --text-muted:  #6b7280;
+  --text-faint:  #9ca3af;
+
+  --accent-xp:      var(--xp-500);
+  --accent-xp-text: var(--xp-600);
+
+  /* typography */
+  --font-display: 'Sora', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans:    'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  /* motion */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast:   150ms;
+  --dur-normal: 200ms;
+  --dur-slow:   300ms;
+
+  /* radius */
+  --radius-sm:  6px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --radius-2xl: 16px;
+
+  /* shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+  --shadow-md: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
 }
 
-/* Dark mode: eco verde → sky celeste */
+/* semantic aliases — dark mode */
+.dark {
+  --color-primary:       var(--sky-600);
+  --color-primary-hover: var(--sky-700);
+  --color-primary-soft:  #374151;
+  --color-primary-tint:  #f0f9ff;
+  --color-primary-text:  var(--sky-400);
+  --color-on-primary:    #ffffff;
+
+  --bg-app:         #111827;
+  --surface-card:   #1f2937;
+  --surface-sunken: #374151;
+  --border-card:    #374151;
+  --border-input:   #374151;
+
+  --text-strong: #f9fafb;
+  --text-body:   #d1d5db;
+  --text-muted:  #9ca3af;
+  --text-faint:  #6b7280;
+
+  --accent-xp:      var(--xp-400);
+  --accent-xp-text: var(--xp-300);
+}
+
+/* ===========================================================================
+   Base
+   =========================================================================== */
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-strong);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color var(--dur-normal) var(--ease-standard),
+              color var(--dur-normal) var(--ease-standard);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+/* ===========================================================================
+   Dark mode overrides — eco → sky (keep Tailwind compat)
+   =========================================================================== */
 .dark .bg-eco-50        { background-color: #f0f9ff; }
-.dark .bg-eco-600       { background-color: #0284c7; }
-.dark .hover\:bg-eco-700:hover { background-color: #0369a1; }
+.dark .bg-eco-600       { background-color: var(--sky-600); }
+.dark .hover\:bg-eco-700:hover { background-color: var(--sky-700); }
 
 .dark .text-eco-400,
-.dark .dark\:text-eco-400 { color: #38bdf8; }
-
+.dark .dark\:text-eco-400 { color: var(--sky-400); }
 .dark .text-eco-500,
-.dark .dark\:text-eco-500 { color: #0ea5e9; }
-
+.dark .dark\:text-eco-500 { color: var(--sky-500); }
 .dark .text-eco-600,
-.dark .dark\:text-eco-600 { color: #0284c7; }
-
+.dark .dark\:text-eco-600 { color: var(--sky-600); }
 .dark .text-eco-700,
-.dark .dark\:text-eco-700 { color: #0369a1; }
+.dark .dark\:text-eco-700 { color: var(--sky-700); }
+.dark .hover\:text-eco-600:hover { color: var(--sky-600); }
+.dark .focus\:ring-eco-500:focus { --tw-ring-color: var(--sky-500); }
+.dark .border-eco-500   { border-color: var(--sky-500); }
 
-.dark .hover\:text-eco-600:hover { color: #0284c7; }
-
-.dark .focus\:ring-eco-500:focus { --tw-ring-color: #0ea5e9; }
-
-.dark .border-eco-500   { border-color: #0ea5e9; }
-
-/* Kiru theme toggle */
+/* ===========================================================================
+   Animations
+   =========================================================================== */
 @keyframes kiru-flip {
-  0%   { transform: scale(1) rotateY(0deg); }
+  0%   { transform: scale(1)   rotateY(0deg); }
   40%  { transform: scale(1.4) rotateY(90deg); }
   60%  { transform: scale(1.4) rotateY(270deg); }
-  100% { transform: scale(1) rotateY(360deg); }
+  100% { transform: scale(1)   rotateY(360deg); }
 }
+.kiru-animate { animation: kiru-flip 0.5s var(--ease-standard); }
 
-.kiru-animate {
-  animation: kiru-flip 0.5s ease-in-out;
+/* celebratory pop — level-up, new badge, CONFIRM */
+@keyframes kiru-pop {
+  0%   { transform: scale(0.8); opacity: 0; }
+  60%  { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.kiru-pop { animation: kiru-pop 0.4s var(--ease-standard) both; }
+
+/* ===========================================================================
+   Responsive — collapse 2-col to 1-col below md
+   =========================================================================== */
+@media (max-width: 768px) {
+  .dash-split { grid-template-columns: 1fr !important; }
 }

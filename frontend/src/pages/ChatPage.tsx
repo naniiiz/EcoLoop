@@ -46,8 +46,8 @@ export default function ChatPage() {
 
         <div className="flex items-center gap-3 px-1">
           <KiruState state={loading ? 'THINKING' : 'RECOMMEND'} size={48} />
-          <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-            {loading ? 'Kiru esta pensando...' : `Kiru${perfil?.nombre ? ` para ${perfil.nombre}` : ''}`}
+          <span className="font-display text-sm font-semibold text-gray-700 dark:text-gray-200 tracking-tight">
+            {loading ? 'Kiru está pensando…' : `Kiru${perfil?.nombre ? ` para ${perfil.nombre}` : ''}`}
           </span>
         </div>
 
