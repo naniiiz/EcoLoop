@@ -71,7 +71,7 @@ export default function PerfilHabitosPage() {
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
         <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <KiruState state="ANALYZE" size={96} />
+            <KiruState state="ANALYZE" size={96} animate />
             <div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Perfil de habitos</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">

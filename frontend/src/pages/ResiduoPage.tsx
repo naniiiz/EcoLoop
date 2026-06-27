@@ -12,7 +12,7 @@ import {
   Sprout,
   Trash2,
   Trophy,
-  Wine
+  Wine,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import Navbar from '../components/layout/Navbar'
@@ -21,13 +21,22 @@ import { deleteRegistro, getRegistros, getTiposResiduo, registrarResiduo } from 
 import { RegistroResponse } from '../types'
 import { formatKg, formatNumber } from '../utils/format'
 
-const typeIcons: Record<string, LucideIcon> = {
+const RESIDUO_EMOJIS: Record<string, string> = {
+  PLASTICO: '🧴',
+  PAPEL: '📄',
+  VIDRIO: '🍶',
+  METAL: '🔩',
+  ORGANICO: '🌿',
+  ELECTRONICO: '💻',
+}
+
+const RESIDUO_ICONS: Record<string, LucideIcon> = {
   PLASTICO: Recycle,
   PAPEL: FileText,
   VIDRIO: Wine,
   METAL: PackageCheck,
   ORGANICO: Sprout,
-  ELECTRONICO: Cpu
+  ELECTRONICO: Cpu,
 }
 
 export default function ResiduoPage() {
@@ -35,6 +44,7 @@ export default function ResiduoPage() {
   const [tipoResiduoId, setTipoResiduoId] = useState<number | null>(null)
   const [cantidad, setCantidad] = useState('0.5')
   const [result, setResult] = useState<RegistroResponse | null>(null)
+  const [filtroTipo, setFiltroTipo] = useState<string | null>(null)
 
   const { data, isError, isLoading } = useQuery({
     queryKey: ['tipos-residuo'],
@@ -95,7 +105,7 @@ export default function ResiduoPage() {
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
         <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
-            <KiruState state={result ? (result.levelUp ? 'CELEBRATE' : 'CONFIRM') : 'WELCOME'} size={88} />
+            <KiruState state={result ? (result.levelUp ? 'CELEBRATE' : 'CONFIRM') : 'WELCOME'} size={106} animate />
             <div>
               <h2 className="font-display text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Registrar residuo</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -122,8 +132,8 @@ export default function ResiduoPage() {
                   <p className="text-sm text-gray-400 col-span-full">No hay tipos de residuo disponibles.</p>
                 )}
                 {tipos.map(tipo => {
-                  const Icon = typeIcons[tipo.codigo] ?? Leaf
                   const active = tipo.id === tipoResiduoId
+                  const Icon = RESIDUO_ICONS[tipo.codigo] ?? Leaf
                   return (
                     <button
                       key={tipo.id}
@@ -136,7 +146,7 @@ export default function ResiduoPage() {
                           : 'border-gray-100 hover:border-eco-300 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700'
                       }`}
                     >
-                      <Icon size={22} className={active ? 'text-eco-600 dark:text-eco-400' : 'text-gray-400'} />
+                      <Icon size={24} className={active ? 'text-eco-600 dark:text-eco-400' : 'text-gray-400'} />
                       <div className="mt-3 font-semibold text-sm text-gray-800 dark:text-gray-100">{tipo.nombre}</div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">{tipo.xpPorKg} XP/kg</div>
                     </button>
@@ -189,7 +199,7 @@ export default function ResiduoPage() {
 
           <aside className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm">
             <div className="flex items-center gap-3 mb-5">
-              <KiruState state={result ? (result.levelUp ? 'CELEBRATE' : 'CONFIRM') : 'IMPACT'} size={64} />
+              <KiruState state={result ? (result.levelUp ? 'CELEBRATE' : 'CONFIRM') : 'IMPACT'} size={77} animate />
               <div>
                 <h3 className="font-semibold text-gray-800 dark:text-gray-100">
                   {result ? 'Registro confirmado' : 'Vista previa'}
@@ -241,24 +251,50 @@ export default function ResiduoPage() {
 
         {historial.length > 0 && (
           <section className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 space-y-3">
               <h3 className="font-semibold text-gray-800 dark:text-gray-100">Historial de registros</h3>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(RESIDUO_EMOJIS)
+                  .filter(([codigo]) => historial.some(r => r.tipoResiduoCodigo === codigo))
+                  .map(([codigo, emoji]) => {
+                    const nombre = historial.find(r => r.tipoResiduoCodigo === codigo)?.tipoResiduo ?? codigo
+                    const active = filtroTipo === codigo
+                    return (
+                      <button
+                        key={codigo}
+                        onClick={() => setFiltroTipo(active ? null : codigo)}
+                        className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+                          active
+                            ? 'bg-eco-600 text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-eco-100 hover:text-eco-700 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <span>{emoji}</span>
+                        {nombre}
+                      </button>
+                    )
+                  })}
+              </div>
             </div>
+            {filtroTipo === null ? (
+              <p className="px-5 py-8 text-center text-sm text-gray-400 dark:text-gray-500">
+                Selecciona un tipo de residuo para ver su historial.
+              </p>
+            ) : (
             <ul className="divide-y divide-gray-100 dark:divide-gray-700">
-              {historial.map(r => {
-                const Icon = typeIcons[r.tipoResiduoCodigo] ?? Leaf
+              {historial.filter(r => r.tipoResiduoCodigo === filtroTipo).map(r => {
                 const deleting = deleteMutation.isPending && deleteMutation.variables === r.id
                 return (
-                  <li key={r.id} className="grid grid-cols-[auto_1fr_auto] gap-x-3 gap-y-1 px-5 py-3 sm:flex sm:items-center">
-                    <Icon size={18} className="text-eco-600 dark:text-eco-400 shrink-0 mt-0.5 sm:mt-0" />
-                    <span className="min-w-0 text-sm font-medium text-gray-800 dark:text-gray-100">{r.tipoResiduo}</span>
-                    <span className="text-right text-sm text-gray-500 dark:text-gray-400 sm:text-left">{formatKg(r.cantidadKg, 2)}</span>
-                    <span className="col-start-2 text-sm text-eco-600 dark:text-eco-400 sm:col-start-auto sm:w-20 sm:text-right">{formatKg(r.co2EvitadoKg, 2)} CO2</span>
-                    <span className="text-right text-xs text-gray-400 sm:w-28">{new Date(r.fechaRegistro).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                  <li key={r.id} className="flex items-center gap-3 px-5 py-3">
+                    {(() => { const I = RESIDUO_ICONS[r.tipoResiduoCodigo] ?? Leaf; return <I size={18} className="shrink-0 text-eco-600 dark:text-eco-400" /> })()}
+                    <span className="flex-1 min-w-0 text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{r.tipoResiduo}</span>
+                    <span className="shrink-0 text-sm text-gray-500 dark:text-gray-400">{formatKg(r.cantidadKg, 2)}</span>
+                    <span className="shrink-0 text-sm text-eco-600 dark:text-eco-400">{formatKg(r.co2EvitadoKg, 2)} CO2</span>
+                    <span className="hidden sm:block shrink-0 text-xs text-gray-400 w-28 text-right">{new Date(r.fechaRegistro).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                     <button
                       onClick={() => deleteMutation.mutate(r.id)}
                       disabled={deleting}
-                      className="col-start-3 row-span-2 row-start-1 self-center justify-self-end rounded-md p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-40 transition-colors sm:ml-2"
+                      className="shrink-0 rounded-md p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-40 transition-colors"
                       aria-label="Eliminar registro"
                     >
                       <Trash2 size={15} />
@@ -267,6 +303,7 @@ export default function ResiduoPage() {
                 )
               })}
             </ul>
+            )}
           </section>
         )}
       </main>

@@ -1,20 +1,39 @@
 import { type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
-  XAxis,
-  YAxis
 } from 'recharts'
+
 import { ArrowRight, BatteryCharging, Car, Flame, Leaf, Sprout, Zap } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import KiruState from '../components/kiru/KiruState'
-import { getImpactoMensual, getImpactoPorTipo, getImpactoResumen, getPerfil } from '../services/ecoloop'
+import { getImpactoPorTipo, getImpactoResumen, getPerfil } from '../services/ecoloop'
 import { clampPercent, formatKg, formatNumber, getLevelBaseXp } from '../utils/format'
+
+const PIE_COLORS = [
+  '#16a34a', '#2563eb', '#d97706', '#dc2626', '#7c3aed',
+  '#0891b2', '#db2777', '#65a30d', '#ea580c', '#6366f1',
+]
+
+function SmallLegend({ payload }: { payload?: Array<{ color: string; value: string }> }) {
+  if (!payload) return null
+  return (
+    <ul className="flex flex-col gap-1 pl-2">
+      {payload.map((entry, i) => (
+        <li key={i} className="flex items-center gap-1.5">
+          <span className="inline-block w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: entry.color }} />
+          <span className="text-[10px] sm:text-xs text-gray-700 dark:text-gray-300 truncate max-w-[70px] sm:max-w-[120px]">{entry.value}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
 
 export default function DashboardPage() {
   const { data: perfil, isLoading: loadingPerfil } = useQuery({ queryKey: ['perfil'], queryFn: getPerfil })
@@ -22,10 +41,7 @@ export default function DashboardPage() {
     queryKey: ['impacto-resumen'],
     queryFn: getImpactoResumen
   })
-  const { data: mensual = [], isLoading: loadingMensual } = useQuery({
-    queryKey: ['impacto-mensual'],
-    queryFn: getImpactoMensual
-  })
+
   const { data: porTipo = [], isLoading: loadingPorTipo } = useQuery({
     queryKey: ['impacto-por-tipo'],
     queryFn: getImpactoPorTipo
@@ -36,7 +52,7 @@ export default function DashboardPage() {
   const progress = nextXp
     ? clampPercent((((perfil?.xpTotal ?? 0) - baseXp) / (nextXp - baseXp)) * 100)
     : 100
-  const loading = loadingPerfil || loadingResumen || loadingMensual || loadingPorTipo
+  const loading = loadingPerfil || loadingResumen || loadingPorTipo
   const isNewUser = !loadingPerfil && (perfil?.xpTotal ?? 0) === 0
 
   return (
@@ -45,7 +61,7 @@ export default function DashboardPage() {
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
         <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
-            <KiruState state={isNewUser ? 'WELCOME' : 'IMPACT'} size={88} />
+            <KiruState state={isNewUser ? 'WELCOME' : 'IMPACT'} size={106} animate />
             <div>
               <h2 className="font-display text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
                 {isNewUser
@@ -100,26 +116,30 @@ export default function DashboardPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm min-h-[320px]">
             <div className="flex items-center justify-between gap-3 mb-5">
               <div>
-                <h3 className="font-semibold text-gray-800 dark:text-gray-100">Impacto mensual</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Cada barra es un mes; suma todos los tipos</p>
+                <h3 className="font-semibold text-gray-800 dark:text-gray-100">Impacto por tipo de residuo</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">CO2 evitado por cada tipo registrado</p>
               </div>
-              <span className="text-xs font-medium text-gray-400">{mensual.length} meses</span>
+              <span className="text-xs font-medium text-gray-400">{porTipo.length} tipos</span>
             </div>
-            {mensual.length ? (
+            {porTipo.length ? (
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={mensual} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip
-                      formatter={(value, name) => [
-                        name === 'co2Kg' ? `${formatNumber(Number(value), 2)} kg` : value,
-                        name === 'co2Kg' ? 'CO2' : name
-                      ]}
-                    />
-                    <Bar dataKey="co2Kg" fill="#16a34a" radius={[6, 6, 0, 0]} />
-                  </BarChart>
+                  <PieChart>
+                    <Pie
+                      data={porTipo}
+                      dataKey="co2Kg"
+                      nameKey="tipoResiduo"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={90}
+                    >
+                      {porTipo.map((_: unknown, i: number) => (
+                        <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value, name) => [`${formatNumber(Number(value), 2)} kg CO2`, name]} />
+                    <Legend layout="vertical" align="right" verticalAlign="middle" content={<SmallLegend />} />
+                  </PieChart>
                 </ResponsiveContainer>
               </div>
             ) : (
@@ -161,38 +181,6 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        <section className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm min-h-[320px]">
-          <div className="flex items-center justify-between gap-3 mb-5">
-            <div>
-              <h3 className="font-semibold text-gray-800 dark:text-gray-100">Impacto por tipo de residuo</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Aqui cada barra es un tipo registrado</p>
-            </div>
-            <span className="text-xs font-medium text-gray-400">{porTipo.length} tipos</span>
-          </div>
-          {porTipo.length ? (
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={porTipo} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="tipoResiduo" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip
-                    formatter={(value, name) => [
-                      name === 'co2Kg' || name === 'kgReciclado'
-                        ? `${formatNumber(Number(value), 2)} kg`
-                        : value,
-                      name === 'co2Kg' ? 'CO2' : name === 'kgReciclado' ? 'Kg reciclados' : name
-                    ]}
-                    labelFormatter={label => `Tipo: ${label}`}
-                  />
-                  <Bar dataKey="co2Kg" fill="#16a34a" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <EmptyState loading={loading} text="Registra residuos para ver barras por tipo." />
-          )}
-        </section>
       </main>
     </div>
   )
