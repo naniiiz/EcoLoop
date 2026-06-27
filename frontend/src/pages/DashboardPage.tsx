@@ -16,10 +16,17 @@ import KiruState from '../components/kiru/KiruState'
 import { getImpactoPorTipo, getImpactoResumen, getPerfil } from '../services/ecoloop'
 import { clampPercent, formatKg, formatNumber, getLevelBaseXp } from '../utils/format'
 
-const PIE_COLORS = [
-  '#16a34a', '#2563eb', '#d97706', '#dc2626', '#7c3aed',
-  '#0891b2', '#db2777', '#65a30d', '#ea580c', '#6366f1',
-]
+const TIPO_COLORS: Record<string, string> = {
+  PLASTICO:    '#2563eb',
+  PAPEL:       '#d97706',
+  VIDRIO:      '#0891b2',
+  METAL:       '#6366f1',
+  ORGANICO:    '#16a34a',
+  ELECTRONICO: '#dc2626',
+}
+const FALLBACK_COLORS = ['#7c3aed','#db2777','#65a30d','#ea580c']
+const getColor = (codigo: string, i: number) =>
+  TIPO_COLORS[codigo] ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length]
 
 function SmallLegend({ payload }: { payload?: Array<{ color: string; value: string }> }) {
   if (!payload) return null
@@ -133,8 +140,8 @@ export default function DashboardPage() {
                       cy="50%"
                       outerRadius={90}
                     >
-                      {porTipo.map((_: unknown, i: number) => (
-                        <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                      {porTipo.map((entry: { codigo: string }, i: number) => (
+                        <Cell key={entry.codigo} fill={getColor(entry.codigo, i)} />
                       ))}
                     </Pie>
                     <Tooltip formatter={(value, name) => [`${formatNumber(Number(value), 2)} kg CO2`, name]} />

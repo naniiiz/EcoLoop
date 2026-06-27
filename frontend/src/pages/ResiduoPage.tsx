@@ -77,6 +77,7 @@ export default function ResiduoPage() {
       void queryClient.invalidateQueries({ queryKey: ['perfil'] })
       void queryClient.invalidateQueries({ queryKey: ['impacto-resumen'] })
       void queryClient.invalidateQueries({ queryKey: ['impacto-mensual'] })
+      void queryClient.invalidateQueries({ queryKey: ['impacto-por-tipo'] })
       void queryClient.invalidateQueries({ queryKey: ['insignias'] })
       void queryClient.invalidateQueries({ queryKey: ['registros'] })
     }
