@@ -1,6 +1,7 @@
 import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { type ReactNode, useState, useCallback, useLayoutEffect, useRef } from 'react'
 import {
+  Camera,
   LayoutDashboard,
   LogOut,
   Recycle,
@@ -13,6 +14,7 @@ import KiruChatWidget from '../kiru/KiruChatWidget'
 const links = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/registro', label: 'Residuos', icon: Recycle },
+  { to: '/scanner', label: 'Scanner', icon: Camera },
   { to: '/logros', label: 'Logros', icon: Trophy },
 ]
 

@@ -13,6 +13,7 @@ export default defineConfig({
       '/gamificacion':'http://localhost:8082',
       '/impacto':     'http://localhost:8082',
       '/usuarios':    'http://localhost:8082',
+      '/vision':      'http://localhost:8082',
     }
   }
 })

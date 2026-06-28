@@ -70,3 +70,20 @@ export async function enviarMensajeKiru(mensaje: string) {
   const { data } = await api.post<{ respuesta: string; tokensUsados: number }>('/agente/chat', { mensaje })
   return data
 }
+
+export interface VisionResponse {
+  nombre: string
+  categoria: string
+  reciclable: boolean
+  contenedor: string
+  consejo: string
+}
+
+export async function identificarResiduo(imagen: File): Promise<VisionResponse> {
+  const form = new FormData()
+  form.append('imagen', imagen)
+  const { data } = await api.post<VisionResponse>('/vision/identificar', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data
+}
