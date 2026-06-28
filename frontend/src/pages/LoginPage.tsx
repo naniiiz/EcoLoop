@@ -1,8 +1,21 @@
-import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
 import api from '../services/api'
+
+function KiruToggleIcon({ theme, animating }: { theme: string; animating: boolean }) {
+  const src = theme === 'light' ? '/kiru/kiru-luna.webp' : '/kiru/kiru-sol.webp'
+  return (
+    <img
+      src={src}
+      alt={theme === 'light' ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro'}
+      width={34}
+      height={34}
+      className={animating ? 'kiru-animate' : ''}
+      style={{ objectFit: 'contain', display: 'block' }}
+    />
+  )
+}
 
 export default function LoginPage() {
   const [isRegister, setIsRegister] = useState(false)
@@ -12,8 +25,16 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const navigate = useNavigate()
   const setAuth = useAuthStore(s => s.setAuth)
+  const setAuthTransition = useAuthStore(s => s.setAuthTransition)
+  const { theme, toggleTheme } = useAuthStore()
+  const [animating, setAnimating] = useState(false)
+
+  const handleToggleTheme = useCallback(() => {
+    setAnimating(true)
+    toggleTheme()
+    setTimeout(() => setAnimating(false), 500)
+  }, [toggleTheme])
   const containerRef  = useRef<HTMLDivElement>(null)
   const leftPupilRef  = useRef<HTMLImageElement>(null)
   const rightPupilRef = useRef<HTMLImageElement>(null)
@@ -50,7 +71,7 @@ export default function LoginPage() {
       const payload  = isRegister ? { nombre, email, password } : { email, password }
       const { data } = await api.post(endpoint, payload)
       setAuth(data.token, data.nombre, data.email)
-      navigate('/')
+      setAuthTransition({ type: 'login', nombre: data.nombre })
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error al iniciar sesión'
       setError((err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? msg)
@@ -61,6 +82,13 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-eco-50 dark:bg-gray-900 p-4">
+      <button
+        onClick={handleToggleTheme}
+        title="Cambiar tema"
+        className="fixed top-4 right-4 z-10 flex h-11 w-11 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors"
+      >
+        <KiruToggleIcon theme={theme} animating={animating} />
+      </button>
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <div ref={containerRef} className="flex justify-center mb-3 relative" style={{ height: 160, width: 160, margin: '0 auto', overflow: 'hidden' }}>

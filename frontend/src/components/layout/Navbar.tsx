@@ -1,4 +1,4 @@
-import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
+import { NavLink, Link, useLocation } from 'react-router-dom'
 import { type ReactNode, useState, useCallback, useLayoutEffect, useRef } from 'react'
 import {
   Camera,
@@ -35,12 +35,12 @@ function KiruToggleIcon({ theme, animating }: { theme: string; animating: boolea
 }
 
 export default function Navbar() {
-  const { nombre, logout, theme, toggleTheme } = useAuthStore()
-  const navigate = useNavigate()
+  const { nombre, theme, toggleTheme, setAuthTransition } = useAuthStore()
   const [animating, setAnimating] = useState(false)
   const [kiruOpen, setKiruOpen] = useState(false)
   const location = useLocation()
   const navRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
   const pillSpanRef = useRef<HTMLSpanElement>(null)
   const pillIsInit = useRef(false)
 
@@ -56,18 +56,23 @@ export default function Navbar() {
     const width = active.offsetWidth
 
     if (!pillIsInit.current) {
-      // Primera vez: posicionar sin transición, luego habilitarla con reflow forzado
       pillIsInit.current = true
       span.style.transition = 'none'
       span.style.left    = `${left}px`
       span.style.width   = `${width}px`
       span.style.opacity = '1'
-      void span.offsetWidth // fuerza reflow para que 'none' se aplique antes de re-habilitar
+      void span.offsetWidth
       span.style.transition = 'left 340ms cubic-bezier(0.4,0,0.2,1), width 340ms cubic-bezier(0.4,0,0.2,1)'
     } else {
-      // Navegaciones: el browser YA pintó la posición anterior con transición activa → anima
       span.style.left  = `${left}px`
       span.style.width = `${width}px`
+    }
+
+    // Centrar el link activo en el contenedor scroll (arregla el reset en móvil)
+    if (scrollRef.current) {
+      const sc = scrollRef.current
+      const target = left - sc.clientWidth / 2 + width / 2
+      sc.scrollLeft = Math.max(0, target)
     }
   }, [location.pathname])
 
@@ -78,8 +83,7 @@ export default function Navbar() {
   }, [toggleTheme])
 
   const handleLogout = () => {
-    logout()
-    navigate('/login')
+    setAuthTransition({ type: 'logout' })
   }
 
   return (
@@ -108,7 +112,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          <div className="overflow-x-auto scrollbar-none pb-0.5 lg:pb-0">
+          <div ref={scrollRef} className="overflow-x-auto scrollbar-none pb-0.5 lg:pb-0">
             <div ref={navRef} className="relative flex items-center gap-1 bg-eco-600 rounded-full px-2 py-1.5 shadow-lg w-max mx-auto">
               <span
                 ref={pillSpanRef}

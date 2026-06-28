@@ -8,6 +8,17 @@ export default {
         display: ['Sora', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         sans:    ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
+      keyframes: {
+        'auth-flash': {
+          '0%':   { opacity: '0' },
+          '20%':  { opacity: '1' },
+          '70%':  { opacity: '1' },
+          '100%': { opacity: '0' },
+        },
+      },
+      animation: {
+        'auth-flash': 'auth-flash 0.55s ease forwards',
+      },
       colors: {
         eco: {
           50:  '#f0fdf4',

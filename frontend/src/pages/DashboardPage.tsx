@@ -233,25 +233,35 @@ export default function DashboardPage() {
         </section>
 
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatCard
-            icon={<Leaf size={24} className="text-eco-500" />}
-            label="CO2 evitado"
-            value={formatKg(resumen?.co2TotalKg ?? perfil?.co2TotalEvitadoKg, 1)}
-            loading={loadingResumen}
-          />
-          <StatCard
-            icon={<Flame size={24} className="text-orange-500" />}
-            label="Racha actual"
-            value={rachaActual === 1 ? '1 día' : `${rachaActual} días`}
-            loading={loadingPerfil}
-            featured
-          />
-          <StatCard
-            icon={<Sprout size={24} className="text-emerald-500" />}
-            label="Total reciclado"
-            value={formatKg(resumen?.kgTotalReciclado, 1)}
-            loading={loadingResumen}
-          />
+          {(() => {
+            const co2Kg = resumen?.co2TotalKg ?? perfil?.co2TotalEvitadoKg ?? 0
+            const kgReciclado = resumen?.kgTotalReciclado ?? 0
+            const diasCarga = Math.round(co2Kg / 0.005)
+            const botellas = Math.round(kgReciclado * 25)
+            return (<>
+              <StatCard
+                icon={<Leaf size={24} className="text-eco-500" />}
+                label="CO2 evitado"
+                value={formatKg(co2Kg, 1)}
+                loading={loadingResumen}
+                hint={co2Kg > 0 ? `≈ ${diasCarga} días de carga de celular` : undefined}
+              />
+              <StatCard
+                icon={<Flame size={24} className="text-orange-500" />}
+                label="Racha actual"
+                value={rachaActual === 1 ? '1 día' : `${rachaActual} días`}
+                loading={loadingPerfil}
+                featured
+              />
+              <StatCard
+                icon={<Sprout size={24} className="text-emerald-500" />}
+                label="Total reciclado"
+                value={formatKg(kgReciclado, 1)}
+                loading={loadingResumen}
+                hint={kgReciclado > 0 ? `≈ ${botellas} botellas de plástico` : undefined}
+              />
+            </>)
+          })()}
         </section>
 
         <section className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-4">
@@ -338,12 +348,14 @@ function StatCard({
   loading,
   value,
   featured = false,
+  hint,
 }: {
   icon: ReactNode
   label: string
   loading?: boolean
   value: string
   featured?: boolean
+  hint?: string
 }) {
   return (
     <div className={`rounded-lg p-5 shadow-sm border transition-transform ${
@@ -364,6 +376,9 @@ function StatCard({
             {loading ? '...' : value}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400 leading-tight">{label}</div>
+          {hint && !loading && (
+            <div className="text-xs text-eco-600 dark:text-eco-400 mt-0.5 leading-tight">{hint}</div>
+          )}
         </div>
       </div>
     </div>
