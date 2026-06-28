@@ -99,7 +99,7 @@ export default function ScannerPage() {
       <Navbar />
       <main className="max-w-lg mx-auto px-4 py-8 space-y-6">
         <section className="flex items-center gap-4">
-          <KiruState state={kiruState} size={96} animate />
+          <img src="/kiru/kiru-scanner.png" alt="Kiru" className="w-32 h-32 object-contain drop-shadow-sm" />
           <div>
             <h2 className="font-display text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
               Scanner de residuos

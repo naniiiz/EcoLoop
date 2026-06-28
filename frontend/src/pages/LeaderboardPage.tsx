@@ -43,9 +43,12 @@ export default function LeaderboardPage() {
     <div className="min-h-screen bg-eco-50 dark:bg-gray-900">
       <Navbar />
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
-        <div>
-          <h1 className="font-display text-3xl font-bold text-gray-900 dark:text-white">Ranking</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Top 10 recicladores de la comunidad</p>
+        <div className="flex items-center gap-4">
+          <img src="/kiru/kiru-ranking.png" alt="Kiru" className="w-32 h-32 object-contain drop-shadow-sm" />
+          <div>
+            <h1 className="font-display text-3xl font-bold text-gray-900 dark:text-white">Ranking</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Top 10 recicladores de la comunidad</p>
+          </div>
         </div>
 
         {isLoading && (
