@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
@@ -14,6 +14,32 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
   const setAuth = useAuthStore(s => s.setAuth)
+  const containerRef  = useRef<HTMLDivElement>(null)
+  const leftPupilRef  = useRef<HTMLImageElement>(null)
+  const rightPupilRef = useRef<HTMLImageElement>(null)
+
+  useEffect(() => {
+    const track = (ref: React.RefObject<HTMLImageElement | null>, cx: number, cy: number, mx: MouseEvent, maxL: number, maxR: number, maxY: number) => {
+      if (!ref.current) return
+      const dx = mx.clientX - cx
+      const dy = mx.clientY - cy
+      const dist = Math.sqrt(dx * dx + dy * dy)
+      if (dist === 0) return
+      const maxX = dx < 0 ? maxL : maxR
+      const ox = Math.sign(dx) * Math.min(maxX, Math.abs(dx * 3 / dist))
+      const oy = Math.sign(dy) * Math.min(maxY, Math.abs(dy * 3 / dist))
+      ref.current.style.transform = `translate(${ox}px, ${oy}px)`
+    }
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!containerRef.current || showPassword) return
+      const rect = containerRef.current.getBoundingClientRect()
+      track(leftPupilRef,  rect.left + rect.width * (454 / 1024), rect.top + rect.height * (330 / 1024), e, 8, 5, 5)
+      track(rightPupilRef, rect.left + rect.width * (573 / 1024), rect.top + rect.height * (330 / 1024), e, 6, 3, 3)
+    }
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [showPassword])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,22 +63,42 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-eco-50 dark:bg-gray-900 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-3 relative" style={{ height: 160 }}>
+          <div ref={containerRef} className="flex justify-center mb-3 relative" style={{ height: 160, width: 160, margin: '0 auto', overflow: 'hidden' }}>
             <img
-              src="/kiru/kiru-feliz.png"
+              src="/kiru/kiru-feliz-sin-pupilas.png"
               alt="Kiru"
               width={160}
               height={160}
-              className="object-contain absolute transition-opacity duration-300"
-              style={{ opacity: showPassword ? 0 : 1 }}
+              className="object-contain absolute"
+              style={{ opacity: showPassword ? 0 : 1, transition: 'opacity 300ms' }}
+            />
+            <img
+              ref={leftPupilRef}
+              src="/kiru/kiru-pupila-izq.png"
+              alt=""
+              aria-hidden
+              width={160}
+              height={160}
+              className="object-contain absolute pointer-events-none"
+              style={{ opacity: showPassword ? 0 : 1, transition: 'opacity 300ms', left: '1px', top: '-1.5px' }}
+            />
+            <img
+              ref={rightPupilRef}
+              src="/kiru/kiru-pupila-der.png"
+              alt=""
+              aria-hidden
+              width={160}
+              height={160}
+              className="object-contain absolute pointer-events-none"
+              style={{ opacity: showPassword ? 0 : 1, transition: 'opacity 300ms', left: '1px', top: '-1.5px' }}
             />
             <img
               src="/kiru/kiru-ojos-tapados.png"
               alt="Kiru tapándose los ojos"
               width={160}
               height={160}
-              className="object-contain absolute transition-opacity duration-300"
-              style={{ opacity: showPassword ? 1 : 0 }}
+              className="object-contain absolute"
+              style={{ opacity: showPassword ? 1 : 0, transition: 'opacity 300ms' }}
             />
           </div>
           <h1 className="font-display text-3xl font-bold tracking-tight text-eco-700 dark:text-eco-400">EcoLoop</h1>
