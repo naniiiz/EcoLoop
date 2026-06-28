@@ -14,6 +14,7 @@ export default defineConfig({
       '/impacto':     'http://localhost:8082',
       '/usuarios':    'http://localhost:8082',
       '/vision':      'http://localhost:8082',
+      '/leaderboard': 'http://localhost:8082',
     }
   }
 })

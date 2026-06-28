@@ -4,6 +4,7 @@ import {
   Camera,
   LayoutDashboard,
   LogOut,
+  Medal,
   Recycle,
   Trophy,
   UserRound,
@@ -16,6 +17,7 @@ const links = [
   { to: '/registro', label: 'Residuos', icon: Recycle },
   { to: '/scanner', label: 'Scanner', icon: Camera },
   { to: '/logros', label: 'Logros', icon: Trophy },
+  { to: '/leaderboard', label: 'Ranking', icon: Medal },
 ]
 
 function KiruToggleIcon({ theme, animating }: { theme: string; animating: boolean }) {
