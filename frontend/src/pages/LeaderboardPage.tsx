@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { Trophy } from 'lucide-react'
 import api from '../services/api'
 import Navbar from '../components/layout/Navbar'
 import { useAuthStore } from '../store/authStore'
@@ -15,7 +16,19 @@ async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
   return data
 }
 
-const MEDALS = ['🥇', '🥈', '🥉']
+const MEDAL_STYLES = [
+  { bg: 'bg-yellow-400', text: 'text-yellow-900' },
+  { bg: 'bg-gray-300',   text: 'text-gray-700'   },
+  { bg: 'bg-amber-600',  text: 'text-white'       },
+]
+function MedalBadge({ pos }: { pos: number }) {
+  const s = MEDAL_STYLES[pos - 1]
+  return (
+    <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${s.bg} ${s.text}`}>
+      {pos}
+    </span>
+  )
+}
 
 const AVATAR_COLORS = [
   'bg-eco-500',
@@ -44,7 +57,7 @@ export default function LeaderboardPage() {
       <Navbar />
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
         <div className="flex items-center gap-4">
-          <img src="/kiru/kiru-ranking.png" alt="Kiru" className="w-32 h-32 object-contain drop-shadow-sm" />
+          <img src="/kiru/kiru-ranking.webp" alt="Kiru" className="w-32 h-32 object-contain drop-shadow-sm" />
           <div>
             <h1 className="font-display text-3xl font-bold text-gray-900 dark:text-white">Ranking</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Top 10 recicladores de la comunidad</p>
@@ -71,11 +84,11 @@ export default function LeaderboardPage() {
             <div className="flex items-end justify-center gap-4 bg-gradient-to-b from-eco-600 to-eco-500 px-6 pt-6 pb-8">
               {[data[1], data[0], data[2]].filter(Boolean).map((entry, i) => {
                 const order = [1, 0, 2]
-                const heights = ['h-20', 'h-28', 'h-16']
+                const heights = ['h-28', 'h-20', 'h-16']
                 const realIdx = order[i]
                 return (
                   <div key={entry.posicion} className="flex flex-col items-center gap-2">
-                    <span className="text-2xl">{MEDALS[entry.posicion - 1]}</span>
+                    <MedalBadge pos={entry.posicion} />
                     <div className={`flex items-center justify-center w-12 h-12 rounded-full text-white font-bold text-lg ${AVATAR_COLORS[(entry.posicion - 1) % AVATAR_COLORS.length]} ring-2 ring-white`}>
                       {entry.nombre.charAt(0).toUpperCase()}
                     </div>
@@ -140,7 +153,8 @@ export default function LeaderboardPage() {
             {/* También resalta si el usuario está en top 3 */}
             {data.slice(0, 3).some(e => e.nombre === miNombre) && (
               <p className="px-4 py-3 text-center text-xs text-eco-600 dark:text-eco-400 font-medium border-t border-gray-100 dark:border-gray-700">
-                ¡Estás en el podio! 🏆
+                <Trophy size={14} className="inline mr-1" />
+              ¡Estás en el podio!
               </p>
             )}
           </div>

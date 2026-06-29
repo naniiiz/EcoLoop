@@ -6,7 +6,7 @@ import {
   ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts'
 
-import { ArrowRight, Car, Check, Download, Flame, Leaf, Share2, ShoppingBag, Sprout, Tv } from 'lucide-react'
+import { ArrowRight, Car, Check, Download, Leaf, Share2, ShoppingBag, Sprout, Tv } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import KiruState from '../components/kiru/KiruState'
@@ -238,12 +238,9 @@ export default function DashboardPage() {
                 loading={loadingResumen}
                 hint={co2Kg > 0 ? `≈ ${diasCarga} días de carga de celular` : undefined}
               />
-              <StatCard
-                icon={<Flame size={24} className="text-orange-500" />}
-                label="Racha actual"
+              <StreakCard
                 value={rachaActual === 1 ? '1 día' : `${rachaActual} días`}
                 loading={loadingPerfil}
-                featured
               />
               <StatCard
                 icon={<Sprout size={24} className="text-emerald-500" />}
@@ -344,6 +341,50 @@ export default function DashboardPage() {
         )}
 
       </main>
+    </div>
+  )
+}
+
+function FilledFlame() {
+  return (
+    <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden>
+      <defs>
+        <linearGradient id="flameGrad" x1="26" y1="4" x2="26" y2="48" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#FDE68A" />
+          <stop offset="45%" stopColor="#FB923C" />
+          <stop offset="100%" stopColor="#EA580C" />
+        </linearGradient>
+        <linearGradient id="flameInner" x1="26" y1="18" x2="26" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#FEF9C3" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#FDE68A" stopOpacity="0.3" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M26 4C23 11 15 18 15 28a11 11 0 0 0 22 0c0-10-8-17-11-24z"
+        fill="url(#flameGrad)"
+      />
+      <path
+        d="M26 18C24.5 21.5 22 25 22 29a4 4 0 0 0 8 0c0-4-2.5-7.5-4-11z"
+        fill="url(#flameInner)"
+      />
+    </svg>
+  )
+}
+
+function StreakCard({ value, loading }: { value: string; loading?: boolean }) {
+  return (
+    <div className="relative overflow-hidden rounded-xl p-5 shadow-xl bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 ring-2 ring-orange-300/40 scale-[1.04]">
+      <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/10 pointer-events-none" />
+      <div className="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-white/10 pointer-events-none" />
+      <div className="relative flex items-center gap-3">
+        <FilledFlame />
+        <div className="min-w-0">
+          <div className="font-display text-3xl font-black text-white leading-tight tracking-tight drop-shadow">
+            {loading ? '...' : value}
+          </div>
+          <div className="text-sm font-semibold text-orange-100 mt-0.5">Racha actual</div>
+        </div>
+      </div>
     </div>
   )
 }

@@ -105,7 +105,7 @@ export default function ScannerPage() {
       <Navbar />
       <main className="max-w-lg mx-auto px-4 py-8 space-y-6">
         <section className="flex items-center gap-4">
-          <img src="/kiru/kiru-scanner.png" alt="Kiru" className="w-32 h-32 object-contain drop-shadow-sm" />
+          <img src="/kiru/kiru-scanner.webp" alt="Kiru" className="w-32 h-32 object-contain drop-shadow-sm" />
           <div>
             <h2 className="font-display text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
               Scanner de residuos
@@ -178,7 +178,7 @@ export default function ScannerPage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Residuo identificado</p>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">{vision.nombre}</h3>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white capitalize">{vision.nombre}</h3>
                 </div>
                 <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-semibold ${categoriaStyle.bg} ${categoriaStyle.text}`}>
                   {categoriaStyle.label}

@@ -1,6 +1,6 @@
 import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, AlertCircle, CalendarDays, Leaf, Pencil, Save, Scale, ShieldCheck, Target, TrendingUp, X } from 'lucide-react'
+import { Activity, AlertCircle, CalendarDays, Flame, Leaf, Lightbulb, Pencil, Save, Scale, ShieldCheck, Target, TrendingUp, X } from 'lucide-react'
 import Navbar from '../components/layout/Navbar'
 import KiruState from '../components/kiru/KiruState'
 import { getImpactoMensual, getImpactoPorTipo, getImpactoResumen, getPerfil, getTiposResiduo, updatePerfil } from '../services/ecoloop'
@@ -222,7 +222,7 @@ export default function PerfilHabitosPage() {
             <div className="space-y-3">
               <KiruSignal
                 type="streak"
-                emoji="🔥"
+                icon={<Flame size={16} />}
                 text={
                   (perfil?.rachaActual ?? 0) > 0
                     ? `Racha activa de ${diasStr(perfil?.rachaActual ?? 0)}. Mantener ritmo suma XP constante.`
@@ -231,7 +231,7 @@ export default function PerfilHabitosPage() {
               />
               <KiruSignal
                 type="goal"
-                emoji="🎯"
+                icon={<Target size={16} />}
                 text={
                   (resumen?.kgTotalReciclado ?? 0) >= (perfil?.metaSemanalKg ?? 0)
                     ? 'Meta semanal base ya superada con tu acumulado registrado.'
@@ -240,7 +240,7 @@ export default function PerfilHabitosPage() {
               />
               <KiruSignal
                 type="tip"
-                emoji="💡"
+                icon={<Lightbulb size={16} />}
                 text={
                   habits.tipoAusente
                     ? `Aún no registras ${habits.tipoAusente.nombre}. Factor CO₂: ${formatNumber(habits.tipoAusente.factorCo2Kg, 2)} kg CO₂/kg. Añadir variedad mejora tu perfil.`
@@ -341,11 +341,11 @@ const signalStyles = {
   },
 } as const
 
-function KiruSignal({ emoji, text, type }: { emoji: string; text: string; type: keyof typeof signalStyles }) {
+function KiruSignal({ icon, text, type }: { icon: ReactNode; text: string; type: keyof typeof signalStyles }) {
   const s = signalStyles[type]
   return (
     <div className={`flex items-start gap-2.5 rounded-lg border-l-4 p-3 ${s.border} ${s.bg}`}>
-      <span className="text-base leading-snug flex-shrink-0">{emoji}</span>
+      <span className={`flex-shrink-0 mt-0.5 ${s.text}`}>{icon}</span>
       <p className={`text-sm leading-snug ${s.text}`}>{text}</p>
     </div>
   )

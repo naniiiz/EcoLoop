@@ -11,6 +11,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+    open-in-view: false
     show-sql: false
     properties:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -23,9 +24,10 @@ security:
     secret: ${JWT_SECRET}
     expiration: 86400000
 
-gemini:
-  api-key: ${GEMINI_API_KEY}
-  model: gemini-2.5-flash
+groq:
+  api-key: ${GROQ_API_KEY}
+  model: ${GROQ_MODEL:llama-3.3-70b-versatile}
+  vision-model: ${GROQ_VISION_MODEL:meta-llama/llama-4-scout-17b-16e-instruct}
 
 server:
   port: ${SERVER_PORT:${PORT:8080}}

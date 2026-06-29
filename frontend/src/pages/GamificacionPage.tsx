@@ -91,7 +91,7 @@ export default function GamificacionPage() {
             <div className="mb-2 flex justify-between text-sm">
               <span className="font-semibold text-xp-600 dark:text-xp-400">{perfil?.xpTotal ?? 0} XP</span>
               <span className={`text-sm font-medium ${isMaxLevel ? 'text-xp-500 dark:text-xp-400' : 'text-gray-500 dark:text-gray-400'}`}>
-                {isMaxLevel ? 'Nivel máximo ✦' : `${nextXp} XP`}
+                {isMaxLevel ? 'Nivel máximo' : `${nextXp} XP`}
               </span>
             </div>
             <div className={`h-4 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden ${isMaxLevel ? 'level-max-glow' : ''}`}>

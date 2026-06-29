@@ -22,7 +22,7 @@ public class GeminiConfig {
         HttpClient httpClient = HttpClient.create()
                 .secure(spec -> spec.sslContext(sslContext));
         return builder
-                .baseUrl("https://generativelanguage.googleapis.com/v1beta")
+                .baseUrl("https://api.groq.com/openai/v1")
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .build();

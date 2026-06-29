@@ -13,6 +13,7 @@ import {
   Trash2,
   Trophy,
   Wine,
+  X,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import Navbar from '../components/layout/Navbar'
@@ -56,7 +57,7 @@ export default function ResiduoPage() {
     [tipoResiduoId, tipos]
   )
   const cantidadKg = Number(cantidad)
-  const validAmount = Number.isFinite(cantidadKg) && cantidadKg >= 0.01
+  const validAmount = Number.isFinite(cantidadKg) && cantidadKg >= 0.01 && cantidadKg <= 9999
   const co2Preview = selected && validAmount ? Number(selected.factorCo2Kg) * cantidadKg : 0
   const xpPreview = selected && validAmount ? Math.trunc(selected.xpPorKg * cantidadKg) : 0
 
@@ -171,6 +172,7 @@ export default function ResiduoPage() {
                   id="cantidadKg"
                   type="number"
                   min="0.01"
+                  max="9999"
                   step="0.01"
                   inputMode="decimal"
                   value={cantidad}
@@ -179,7 +181,7 @@ export default function ResiduoPage() {
                 />
                 <span className="text-sm text-gray-500">kg</span>
               </div>
-              {!validAmount && <p className="mt-2 text-sm text-red-500">Minimo 0.01 kg.</p>}
+              {!validAmount && <p className="mt-2 text-sm text-red-500">Ingresa entre 0.01 y 9,999 kg.</p>}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -328,7 +330,7 @@ export default function ResiduoPage() {
             : 'bg-eco-600 text-white dark:bg-eco-700'
           }`}
       >
-        <span className="text-xl">{toast?.levelUp ? '🏆' : '♻️'}</span>
+        {toast?.levelUp ? <Trophy size={20} /> : <Recycle size={20} />}
         <div className="leading-tight">
           <p className="text-sm font-bold">
             {toast?.levelUp ? '¡Subiste de nivel!' : '¡Residuo registrado!'}
@@ -342,7 +344,7 @@ export default function ResiduoPage() {
           className="ml-2 rounded-full p-1 hover:bg-white/20 transition-colors text-white/80 hover:text-white"
           aria-label="Cerrar"
         >
-          ✕
+          <X size={14} />
         </button>
       </div>
     </div>

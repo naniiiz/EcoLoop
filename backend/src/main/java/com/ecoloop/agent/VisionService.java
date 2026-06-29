@@ -18,23 +18,23 @@ import java.util.Map;
 @Slf4j
 public class VisionService {
 
-    private final WebClient geminiWebClient;
+    private final WebClient xaiWebClient;
     private final ObjectMapper objectMapper;
 
-    @Value("${gemini.api-key}")
+    @Value("${groq.api-key}")
     private String apiKey;
 
-    @Value("${gemini.model:gemini-2.5-flash}")
+    @Value("${groq.vision-model:llama-3.2-11b-vision-preview}")
     private String model;
 
     private static final String PROMPT =
-            "Identifica el residuo en la imagen. Responde con JSON: " +
+            "Identifica el residuo en la imagen. Responde SOLO con JSON sin texto adicional: " +
             "{\"nombre\":\"string\",\"categoria\":\"PLASTICO|PAPEL|VIDRIO|METAL|ORGANICO|ELECTRONICO\"," +
             "\"reciclable\":true|false,\"contenedor\":\"color\",\"consejo\":\"max 15 palabras\"}";
 
-    public VisionService(@Qualifier("geminiWebClient") WebClient geminiWebClient,
+    public VisionService(@Qualifier("geminiWebClient") WebClient xaiWebClient,
                          ObjectMapper objectMapper) {
-        this.geminiWebClient = geminiWebClient;
+        this.xaiWebClient = xaiWebClient;
         this.objectMapper = objectMapper;
     }
 
@@ -42,22 +42,24 @@ public class VisionService {
         try {
             String base64 = Base64.getEncoder().encodeToString(imagen.getBytes());
             String mimeType = imagen.getContentType() != null ? imagen.getContentType() : "image/jpeg";
+            String dataUrl = "data:" + mimeType + ";base64," + base64;
 
             Map<String, Object> body = Map.of(
-                    "contents", List.of(Map.of(
-                            "parts", List.of(
-                                    Map.of("text", PROMPT),
-                                    Map.of("inline_data", Map.of(
-                                            "mime_type", mimeType,
-                                            "data", base64
-                                    ))
+                    "model", model,
+                    "messages", List.of(Map.of(
+                            "role", "user",
+                            "content", List.of(
+                                    Map.of("type", "image_url",
+                                           "image_url", Map.of("url", dataUrl)),
+                                    Map.of("type", "text", "text", PROMPT)
                             )
                     )),
-                    "generationConfig", Map.of("maxOutputTokens", 1024)
+                    "max_tokens", 512
             );
 
-            String rawResponse = geminiWebClient.post()
-                    .uri("/models/" + model + ":generateContent?key=" + apiKey)
+            String rawResponse = xaiWebClient.post()
+                    .uri("/chat/completions")
+                    .header("Authorization", "Bearer " + apiKey)
                     .bodyValue(body)
                     .retrieve()
                     .bodyToMono(String.class)
@@ -66,14 +68,13 @@ public class VisionService {
             if (rawResponse == null) return fallback();
 
             JsonNode root = objectMapper.readTree(rawResponse);
-            JsonNode textNode = root.path("candidates").get(0)
-                    .path("content").path("parts").get(0)
-                    .path("text");
+            JsonNode textNode = root.path("choices").get(0)
+                    .path("message").path("content");
 
             if (textNode.isMissingNode()) return fallback();
 
             String text = textNode.asText().trim();
-            log.info("Gemini raw text: {}", text);
+            log.info("xAI vision raw: {}", text);
             String json = extractJson(text);
             return objectMapper.readValue(json, VisionResponseDTO.class);
 

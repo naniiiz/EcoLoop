@@ -14,28 +14,27 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class AgentService {
 
-    private final WebClient geminiWebClient;
+    private final WebClient xaiWebClient;
     private final HabitContextBuilder habitContextBuilder;
     private final ConversacionRepository conversacionRepository;
     private final UsuarioRepository usuarioRepository;
 
-    @Value("${gemini.api-key}")
+    @Value("${groq.api-key}")
     private String apiKey;
 
-    @Value("${gemini.model:gemini-2.0-flash}")
+    @Value("${groq.model:llama-3.3-70b-versatile}")
     private String model;
 
-    public AgentService(@Qualifier("geminiWebClient") WebClient geminiWebClient,
+    public AgentService(@Qualifier("geminiWebClient") WebClient xaiWebClient,
                         HabitContextBuilder habitContextBuilder,
                         ConversacionRepository conversacionRepository,
                         UsuarioRepository usuarioRepository) {
-        this.geminiWebClient = geminiWebClient;
+        this.xaiWebClient = xaiWebClient;
         this.habitContextBuilder = habitContextBuilder;
         this.conversacionRepository = conversacionRepository;
         this.usuarioRepository = usuarioRepository;
@@ -51,7 +50,7 @@ public class AgentService {
         List<Conversacion> historial = conversacionRepository
                 .findTop20ByUsuarioIdOrderByCreatedAtDesc(usuarioId);
 
-        String respuesta = callGemini(systemPrompt, mensaje, historial);
+        String respuesta = callXai(systemPrompt, mensaje, historial);
 
         guardarMensaje(usuario, "user", mensaje);
         guardarMensaje(usuario, "assistant", respuesta);
@@ -72,28 +71,26 @@ public class AgentService {
     }
 
     @SuppressWarnings("unchecked")
-    private String callGemini(String systemPrompt, String userMessage, List<Conversacion> historial) {
+    private String callXai(String systemPrompt, String userMessage, List<Conversacion> historial) {
         try {
-            List<Map<String, Object>> contents = new ArrayList<>(historial.stream()
+            List<Map<String, Object>> messages = new ArrayList<>();
+            messages.add(Map.of("role", "system", "content", systemPrompt));
+
+            historial.stream()
                     .sorted((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt()))
-                    .map(c -> Map.<String, Object>of(
-                            "role", "assistant".equals(c.getRol()) ? "model" : c.getRol(),
-                            "parts", List.of(Map.of("text", c.getContenido()))
-                    ))
-                    .collect(Collectors.toList()));
-            contents.add(Map.<String, Object>of(
-                    "role", "user",
-                    "parts", List.of(Map.of("text", userMessage))
-            ));
+                    .forEach(c -> messages.add(Map.of("role", c.getRol(), "content", c.getContenido())));
+
+            messages.add(Map.of("role", "user", "content", userMessage));
 
             Map<String, Object> body = Map.of(
-                    "system_instruction", Map.of("parts", List.of(Map.of("text", systemPrompt))),
-                    "contents", contents,
-                    "generationConfig", Map.of("maxOutputTokens", 1024)
+                    "model", model,
+                    "messages", messages,
+                    "max_tokens", 1024
             );
 
-            Map<String, Object> response = geminiWebClient.post()
-                    .uri("/models/" + model + ":generateContent?key=" + apiKey)
+            Map<String, Object> response = xaiWebClient.post()
+                    .uri("/chat/completions")
+                    .header("Authorization", "Bearer " + apiKey)
                     .bodyValue(body)
                     .retrieve()
                     .bodyToMono(Map.class)
@@ -101,17 +98,14 @@ public class AgentService {
 
             if (response == null) return getFallback();
 
-            List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.get("candidates");
-            if (candidates == null || candidates.isEmpty()) return getFallback();
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+            if (choices == null || choices.isEmpty()) return getFallback();
 
-            Map<String, Object> content = (Map<String, Object>) candidates.get(0).get("content");
-            List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
-            if (parts == null || parts.isEmpty()) return getFallback();
-
-            return (String) parts.get(0).get("text");
+            Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+            return (String) message.get("content");
 
         } catch (Exception e) {
-            log.error("Error llamando a Gemini API: {}", e.getMessage());
+            log.error("Error llamando a xAI API: {}", e.getMessage());
             return getFallback();
         }
     }

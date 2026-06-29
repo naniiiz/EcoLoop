@@ -79,7 +79,7 @@ export default function TransitionOverlay() {
             style={{ width: 200, height: 200, animation: 'auth-ring-pulse 1s ease-in-out 0.15s infinite' }}
           />
           <img
-            src={isLogin ? '/kiru/kiru-feliz.png' : '/kiru/castor-ecology.webp'}
+            src={isLogin ? '/kiru/kiru-feliz.webp' : '/kiru/castor-ecology.webp'}
             alt="Kiru"
             className="relative w-28 h-28 object-contain drop-shadow-2xl"
             style={{ animation: 'auth-kiru-enter 0.5s cubic-bezier(0.34,1.56,0.64,1) both' }}
@@ -95,7 +95,7 @@ export default function TransitionOverlay() {
             {isLogin ? `¡Hola, ${data?.nombre}!` : '¡Hasta pronto!'}
           </p>
           <p className="text-white/75 text-sm mt-1">
-            {isLogin ? 'Preparando tu espacio 🌿' : 'Sigue reciclando cada día 🌱'}
+            {isLogin ? 'Preparando tu espacio' : 'Sigue reciclando cada día'}
           </p>
         </div>
 
