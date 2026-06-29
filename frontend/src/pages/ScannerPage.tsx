@@ -30,13 +30,22 @@ export default function ScannerPage() {
   const [vision, setVision] = useState<VisionResponse | null>(null)
   const [cantidad, setCantidad] = useState('0.5')
   const [levelUp, setLevelUp] = useState(false)
+  const [scanFailed, setScanFailed] = useState(false)
 
   const { data: tipos = [] } = useQuery({ queryKey: ['tipos-residuo'], queryFn: getTiposResiduo })
 
   const scanMutation = useMutation({
     mutationFn: identificarResiduo,
-    onSuccess: (data) => { setVision(data); setPhase('result') },
-    onError: () => setPhase('preview'),
+    onSuccess: (data) => {
+      if (data.nombre === 'Desconocido') {
+        setScanFailed(true)
+        setPhase('preview')
+      } else {
+        setVision(data)
+        setPhase('result')
+      }
+    },
+    onError: () => { setScanFailed(true); setPhase('preview') },
   })
 
   const registrarMutation = useMutation({
@@ -60,6 +69,7 @@ export default function ScannerPage() {
     setPreviewUrl(URL.createObjectURL(file))
     setPhase('preview')
     setVision(null)
+    setScanFailed(false)
   }
 
   const handleScan = () => {
@@ -82,6 +92,7 @@ export default function ScannerPage() {
     setPreviewUrl(null)
     setSelectedFile(null)
     setVision(null)
+    setScanFailed(false)
     setCantidad('0.5')
     if (inputRef.current) inputRef.current.value = ''
   }
@@ -131,6 +142,11 @@ export default function ScannerPage() {
             <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
               <img src={previewUrl} alt="Preview" className="w-full object-cover max-h-72" />
             </div>
+            {scanFailed && (
+              <p className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
+                Kiru no pudo identificar el residuo. Intenta con otra foto más clara o con mejor iluminación.
+              </p>
+            )}
             <div className="flex gap-3">
               <button
                 onClick={handleReset}
