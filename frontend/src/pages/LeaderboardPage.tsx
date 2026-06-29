@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
+import api from '../services/api'
 import Navbar from '../components/layout/Navbar'
 import { useAuthStore } from '../store/authStore'
 
@@ -11,7 +11,7 @@ interface LeaderboardEntry {
 }
 
 async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
-  const { data } = await axios.get<LeaderboardEntry[]>('/leaderboard/semanal')
+  const { data } = await api.get<LeaderboardEntry[]>('/leaderboard/semanal')
   return data
 }
 
