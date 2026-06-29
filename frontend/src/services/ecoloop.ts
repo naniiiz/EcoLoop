@@ -67,7 +67,7 @@ export async function deleteRegistro(id: number) {
 }
 
 export async function enviarMensajeKiru(mensaje: string) {
-  const { data } = await api.post<{ respuesta: string; tokensUsados: number }>('/agente/chat', { mensaje })
+  const { data } = await api.post<{ respuesta: string; xpGanado: number }>('/agente/chat', { mensaje })
   return data
 }
 
