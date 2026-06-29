@@ -31,6 +31,6 @@ public interface RegistroReciclajeRepository extends JpaRepository<RegistroRecic
            "ORDER BY SUM(r.xpGanado) DESC")
     List<Object[]> findTop10XpSemanalDesde(@Param("desde") LocalDateTime desde, Pageable pageable);
 
-    @Query("SELECT COALESCE(SUM(r.co2EvitadoKg), 0), COALESCE(SUM(r.cantidadKg), 0), COUNT(DISTINCT r.usuario.id), COUNT(r) FROM RegistroReciclaje r")
+    @Query("SELECT SUM(r.co2EvitadoKg), SUM(r.cantidadKg), COUNT(DISTINCT r.usuario.id), COUNT(r) FROM RegistroReciclaje r")
     Object[] findComunidadTotales();
 }
