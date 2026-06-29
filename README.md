@@ -4,6 +4,11 @@ Plataforma web de gamificación del reciclaje doméstico con agente de IA conver
 
 **Hackathon TECSUP · Entrega: 30 junio 2026**
 
+| | URL |
+|-|-----|
+| Frontend | https://frontend-kappa-pink-28.vercel.app |
+| Backend API | https://backend-production-b190.up.railway.app/swagger-ui/index.html |
+
 | Criterio | Objetivo |
 |----------|----------|
 | Innovación y IA | 4/4 |
@@ -32,7 +37,7 @@ Plataforma web de gamificación del reciclaje doméstico con agente de IA conver
 - **IA (chat):** Groq API — `llama-3.3-70b-versatile` (agente Kiru)
 - **IA (visión):** Groq API — `llama-4-scout-17b` / `llama-3.2-11b-vision` (scanner de residuos)
 - **Infra local:** Docker Compose
-- **Deploy:** Railway (backend + DB) · Vercel (frontend)
+- **Deploy:** Railway (backend + DB) · Vercel (frontend) — **en producción**
 
 ---
 
