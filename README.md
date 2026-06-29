@@ -74,13 +74,9 @@ Plataforma web de gamificación del reciclaje doméstico con agente de IA conver
 
 ## Pendiente
 
-### Infraestructura — Miguel (Día 5)
+### Deploy — Miguel
 
-- [x] Dockerfiles para backend y frontend listos
-- [x] `railway.toml` configurado en raíz, `backend/` y `frontend/`
-- [x] `VITE_API_URL` soportado en `api.ts` para apuntar al backend en prod
-- [x] `nginx.conf` para servir SPA con React Router
-- [ ] **Deploy Railway — pasos pendientes:**
+- [ ] **Deploy Railway:**
   1. Crear proyecto en Railway > Deploy from GitHub (`naniiiz/EcoLoop`)
   2. New Service > Database > PostgreSQL — guardar Host/Port/DB/User/Pass
   3. New Service > GitHub > root dir `backend` — agregar vars:
@@ -88,12 +84,10 @@ Plataforma web de gamificación del reciclaje doméstico con agente de IA conver
   4. New Service > GitHub > root dir `frontend` — agregar var:
      `VITE_API_URL=https://<backend>.railway.app`
   5. Copiar URL frontend → actualizar `FRONTEND_URL` en backend
-- [ ] **Cuenta demo pre-cargada** con 15+ registros variados de todos los tipos (para la demo en vivo)
+- [ ] **Cuenta demo pre-cargada** con 15+ registros variados de todos los tipos
 - [ ] **Smoke test** en producción: todos los endpoints con la cuenta demo
 
-> **Nota para compañeros:** Para levantar el backend en Windows necesitan pasar variables de entorno como `$env:` en PowerShell antes de `mvn spring-boot:run`. Ver sección Setup local. El proxy de Vite ya apunta al puerto 8082.
-
-### Presentación — Carlos (Días 3-5)
+### Presentación — Carlos
 
 - [ ] Pitch deck final (problema, solución, demo, impacto, escalabilidad)
 - [ ] Guion de demo en vivo: flujo registro → gamificación → Kiru
