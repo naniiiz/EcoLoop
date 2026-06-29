@@ -74,19 +74,6 @@ Plataforma web de gamificación del reciclaje doméstico con agente de IA conver
 
 ## Pendiente
 
-### Deploy — Miguel
-
-- [ ] **Deploy Railway:**
-  1. Crear proyecto en Railway > Deploy from GitHub (`naniiiz/EcoLoop`)
-  2. New Service > Database > PostgreSQL — guardar Host/Port/DB/User/Pass
-  3. New Service > GitHub > root dir `backend` — agregar vars:
-     `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`, `JWT_SECRET`, `GROQ_API_KEY`, `FRONTEND_URL`
-  4. New Service > GitHub > root dir `frontend` — agregar var:
-     `VITE_API_URL=https://<backend>.railway.app`
-  5. Copiar URL frontend → actualizar `FRONTEND_URL` en backend
-- [ ] **Cuenta demo pre-cargada** con 15+ registros variados de todos los tipos
-- [ ] **Smoke test** en producción: todos los endpoints con la cuenta demo
-
 ### Presentación — Carlos
 
 - [ ] Pitch deck final (problema, solución, demo, impacto, escalabilidad)
