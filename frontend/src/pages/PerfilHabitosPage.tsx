@@ -1,9 +1,9 @@
 import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Activity, CalendarDays, Leaf, Pencil, Save, Scale, ShieldCheck, Target, TrendingUp, X } from 'lucide-react'
+import { Activity, AlertCircle, CalendarDays, Leaf, Pencil, Save, Scale, ShieldCheck, Target, TrendingUp, X } from 'lucide-react'
 import Navbar from '../components/layout/Navbar'
 import KiruState from '../components/kiru/KiruState'
-import { getImpactoMensual, getImpactoResumen, getPerfil, getTiposResiduo, updatePerfil } from '../services/ecoloop'
+import { getImpactoMensual, getImpactoPorTipo, getImpactoResumen, getPerfil, getTiposResiduo, updatePerfil } from '../services/ecoloop'
 import { formatKg, formatNumber } from '../utils/format'
 
 const diasStr = (n: number) => n === 1 ? '1 día' : `${n} días`
@@ -33,6 +33,7 @@ export default function PerfilHabitosPage() {
     queryFn: getImpactoMensual
   })
   const { data: tipos = [] } = useQuery({ queryKey: ['tipos-residuo'], queryFn: getTiposResiduo })
+  const { data: porTipo = [] } = useQuery({ queryKey: ['impacto-por-tipo'], queryFn: getImpactoPorTipo })
 
   const habits = useMemo(() => {
     const months = mensual.length
@@ -43,13 +44,16 @@ export default function PerfilHabitosPage() {
       mensual[0] ?? { mes: 'Sin datos', co2Kg: 0, kgReciclado: 0, xpGanado: 0 }
     )
     const highImpactType = [...tipos].sort((a, b) => Number(b.factorCo2Kg) - Number(a.factorCo2Kg))[0]
+    const codigosRegistrados = new Set(porTipo.map((p: { codigo: string }) => p.codigo))
+    const tipoAusente = tipos.find(t => !codigosRegistrados.has(t.codigo)) ?? null
     return {
       avgKg: months ? totalKg / months : 0,
       avgCo2: months ? totalCo2 / months : 0,
       bestMonth,
-      highImpactType
+      highImpactType,
+      tipoAusente,
     }
-  }, [mensual, tipos])
+  }, [mensual, tipos, porTipo])
 
   useEffect(() => {
     if (perfil && !editing) {
@@ -194,7 +198,13 @@ export default function PerfilHabitosPage() {
                 icon={<ShieldCheck size={18} />}
                 title="Mayor impacto por kg"
                 value={habits.highImpactType?.nombre ?? 'Sin tipos'}
-                detail={`${formatNumber(habits.highImpactType?.factorCo2Kg, 2)} kg CO2/kg`}
+                detail={`${formatNumber(habits.highImpactType?.factorCo2Kg, 2)} kg CO₂/kg`}
+              />
+              <InsightRow
+                icon={<AlertCircle size={18} />}
+                title="Tipo sin registrar"
+                value={habits.tipoAusente?.nombre ?? 'Todos registrados'}
+                detail={habits.tipoAusente ? `Potencial: ${formatNumber(habits.tipoAusente.factorCo2Kg, 2)} kg CO₂/kg` : 'Excelente variedad'}
               />
             </div>
           </div>
@@ -232,9 +242,11 @@ export default function PerfilHabitosPage() {
                 type="tip"
                 emoji="💡"
                 text={
-                  habits.highImpactType
-                    ? `${habits.highImpactType.nombre} tiene mayor CO2 evitado por kg en el catálogo.`
-                    : 'Catálogo de residuos pendiente de cargar.'
+                  habits.tipoAusente
+                    ? `Aún no registras ${habits.tipoAusente.nombre}. Factor CO₂: ${formatNumber(habits.tipoAusente.factorCo2Kg, 2)} kg CO₂/kg. Añadir variedad mejora tu perfil.`
+                    : habits.highImpactType
+                      ? `${habits.highImpactType.nombre} tiene mayor CO₂ por kg. Priorizarlo maximiza impacto.`
+                      : 'Catálogo de residuos pendiente de cargar.'
                 }
               />
             </div>

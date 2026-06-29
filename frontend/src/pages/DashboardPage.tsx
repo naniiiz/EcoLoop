@@ -1,19 +1,16 @@
 import { type ReactNode, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
-  Cell,
-  Legend,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
+  Bar, BarChart, CartesianGrid, Cell,
+  Line, LineChart,
+  ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts'
 
-import { ArrowRight, BatteryCharging, Car, Check, Download, Flame, Leaf, Share2, Sprout } from 'lucide-react'
+import { ArrowRight, Car, Check, Download, Flame, Leaf, Share2, ShoppingBag, Sprout, Tv } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import KiruState from '../components/kiru/KiruState'
-import { getImpactoPorTipo, getImpactoResumen, getPerfil } from '../services/ecoloop'
+import { getImpactoMensual, getImpactoPorTipo, getImpactoResumen, getPerfil } from '../services/ecoloop'
 import { clampPercent, formatKg, formatNumber, getLevelBaseXp } from '../utils/format'
 
 const TIPO_COLORS: Record<string, string> = {
@@ -28,22 +25,10 @@ const FALLBACK_COLORS = ['#7c3aed','#db2777','#65a30d','#ea580c']
 const getColor = (codigo: string, i: number) =>
   TIPO_COLORS[codigo] ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length]
 
-function SmallLegend({ payload }: { payload?: Array<{ color: string; value: string }> }) {
-  if (!payload) return null
-  return (
-    <ul className="flex flex-col gap-1 pl-2">
-      {payload.map((entry, i) => (
-        <li key={i} className="flex items-center gap-1.5">
-          <span className="inline-block w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: entry.color }} />
-          <span className="text-[10px] sm:text-xs text-gray-700 dark:text-gray-300 truncate max-w-[70px] sm:max-w-[120px]">{entry.value}</span>
-        </li>
-      ))}
-    </ul>
-  )
+const formatMesShort = (mes: string) => {
+  const [, month] = mes.split('-')
+  return new Date(2000, Number(month) - 1).toLocaleDateString('es-PE', { month: 'short' })
 }
-
-const renderPieLabel = ({ percent }: { percent: number }) =>
-  percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
 
 export default function DashboardPage() {
   const { data: perfil, isLoading: loadingPerfil } = useQuery({ queryKey: ['perfil'], queryFn: getPerfil })
@@ -56,6 +41,10 @@ export default function DashboardPage() {
     queryKey: ['impacto-por-tipo'],
     queryFn: getImpactoPorTipo
   })
+  const { data: mensual = [] } = useQuery({
+    queryKey: ['impacto-mensual'],
+    queryFn: getImpactoMensual
+  })
 
   const sortedPorTipo = [...porTipo].sort((a, b) => b.co2Kg - a.co2Kg)
   const baseXp = getLevelBaseXp(perfil?.nivelActual ?? 1)
@@ -64,6 +53,9 @@ export default function DashboardPage() {
     ? clampPercent((((perfil?.xpTotal ?? 0) - baseXp) / (nextXp - baseXp)) * 100)
     : 100
   const loading = loadingPerfil || loadingResumen || loadingPorTipo
+  const co2Total = resumen?.co2TotalKg ?? perfil?.co2TotalEvitadoKg ?? 0
+  const horasTV = Math.round(co2Total / 0.05)
+  const bolsas = Math.round(co2Total / 0.0022)
   const isNewUser = !loadingPerfil && (perfil?.xpTotal ?? 0) === 0
   const rachaActual = perfil?.rachaActual ?? 0
   const [pdfState, setPdfState] = useState<'idle' | 'loading' | 'done'>('idle')
@@ -268,32 +260,24 @@ export default function DashboardPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm min-h-[320px]">
             <div className="flex items-center justify-between gap-3 mb-5">
               <div>
-                <h3 className="font-semibold text-gray-800 dark:text-gray-100">Impacto por tipo de residuo</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">CO2 evitado por cada tipo registrado</p>
+                <h3 className="font-semibold text-gray-800 dark:text-gray-100">CO₂ evitado por tipo de residuo</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">kg CO₂ evitado por cada tipo registrado</p>
               </div>
               <span className="text-xs font-medium text-gray-400">{sortedPorTipo.length} tipos</span>
             </div>
             {sortedPorTipo.length ? (
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={sortedPorTipo}
-                      dataKey="co2Kg"
-                      nameKey="tipoResiduo"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={90}
-                      label={renderPieLabel}
-                      labelLine={false}
-                    >
+                  <BarChart data={sortedPorTipo} layout="vertical" margin={{ left: 0, right: 24, top: 4, bottom: 4 }}>
+                    <XAxis type="number" hide />
+                    <YAxis type="category" dataKey="tipoResiduo" width={100} tick={{ fontSize: 11, fill: '#6b7280' }} />
+                    <Tooltip formatter={(v) => [`${formatNumber(Number(v), 2)} kg CO₂`, 'CO₂ evitado']} />
+                    <Bar dataKey="co2Kg" radius={[0, 4, 4, 0]}>
                       {sortedPorTipo.map((entry: { codigo: string }, i: number) => (
                         <Cell key={entry.codigo} fill={getColor(entry.codigo, i)} />
                       ))}
-                    </Pie>
-                    <Tooltip formatter={(value, name) => [`${formatNumber(Number(value), 2)} kg CO2`, name]} />
-                    <Legend layout="vertical" align="right" verticalAlign="middle" content={<SmallLegend />} />
-                  </PieChart>
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
             ) : (
@@ -302,22 +286,27 @@ export default function DashboardPage() {
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm border border-gray-100 dark:border-gray-700">
-            <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4">Equivalencias</h3>
+            <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4">Equivalencias ambientales</h3>
             <div className="space-y-3">
-              <ImpactRow
-                icon={<Sprout size={18} />}
-                label="Árboles por año"
-                value={formatNumber(resumen?.equivalenteArboles, 2)}
-              />
               <ImpactRow
                 icon={<Car size={18} />}
                 label="Km de auto evitados"
                 value={formatNumber(resumen?.equivalenteKmAuto, 1)}
               />
               <ImpactRow
-                icon={<BatteryCharging size={18} />}
-                label="Cargas de teléfono"
-                value={formatNumber(resumen?.equivalenteCargasTelefono, 0)}
+                icon={<Tv size={18} />}
+                label="Horas de TV sin encender"
+                value={formatNumber(horasTV, 0)}
+              />
+              <ImpactRow
+                icon={<ShoppingBag size={18} />}
+                label="Bolsas de plástico"
+                value={formatNumber(bolsas, 0)}
+              />
+              <ImpactRow
+                icon={<Sprout size={18} />}
+                label="Árboles por año"
+                value={formatNumber(resumen?.equivalenteArboles, 2)}
               />
             </div>
 
@@ -336,6 +325,23 @@ export default function DashboardPage() {
             </button>
           </div>
         </section>
+
+        {mensual.length > 0 && (
+          <section className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm">
+            <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4">CO₂ evitado por mes</h3>
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={mensual} margin={{ top: 5, right: 16, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-gray-700" />
+                  <XAxis dataKey="mes" tickFormatter={formatMesShort} tick={{ fontSize: 11, fill: '#6b7280' }} />
+                  <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} tickFormatter={(v) => `${v}kg`} />
+                  <Tooltip formatter={(v) => [`${formatNumber(Number(v), 2)} kg CO₂`, 'CO₂ evitado']} />
+                  <Line dataKey="co2Kg" stroke="#16a34a" strokeWidth={2.5} dot={{ r: 4, fill: '#16a34a' }} activeDot={{ r: 6 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </section>
+        )}
 
       </main>
     </div>
