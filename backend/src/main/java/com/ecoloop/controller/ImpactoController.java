@@ -1,5 +1,6 @@
 package com.ecoloop.controller;
 
+import com.ecoloop.domain.dto.impacto.ImpactoComunidadResponse;
 import com.ecoloop.domain.dto.impacto.ImpactoMensualItem;
 import com.ecoloop.domain.dto.impacto.ImpactoPorTipoItem;
 import com.ecoloop.domain.dto.impacto.ImpactoResumenResponse;
@@ -18,6 +19,11 @@ import java.util.List;
 public class ImpactoController {
 
     private final ImpactoService impactoService;
+
+    @GetMapping("/comunidad")
+    public ResponseEntity<ImpactoComunidadResponse> getComunidad() {
+        return ResponseEntity.ok(impactoService.getComunidadResumen());
+    }
 
     @GetMapping("/resumen")
     public ResponseEntity<ImpactoResumenResponse> getResumen(

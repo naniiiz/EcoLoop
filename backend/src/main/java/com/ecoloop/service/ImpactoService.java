@@ -1,5 +1,6 @@
 package com.ecoloop.service;
 
+import com.ecoloop.domain.dto.impacto.ImpactoComunidadResponse;
 import com.ecoloop.domain.dto.impacto.ImpactoMensualItem;
 import com.ecoloop.domain.dto.impacto.ImpactoPorTipoItem;
 import com.ecoloop.domain.dto.impacto.ImpactoResumenResponse;
@@ -83,6 +84,20 @@ public class ImpactoService {
                 ))
                 .sorted(Comparator.comparing(ImpactoMensualItem::mes))
                 .collect(Collectors.toList());
+    }
+
+    public ImpactoComunidadResponse getComunidadResumen() {
+        Object[] row = registroRepository.findComunidadTotales();
+        double co2 = row[0] != null ? ((Number) row[0]).doubleValue() : 0;
+        double kg  = row[1] != null ? ((Number) row[1]).doubleValue() : 0;
+        long usuarios = row[2] != null ? ((Number) row[2]).longValue() : 0;
+        long registros = row[3] != null ? ((Number) row[3]).longValue() : 0;
+        return new ImpactoComunidadResponse(
+                Math.round(co2 * 100.0) / 100.0,
+                Math.round(kg  * 100.0) / 100.0,
+                usuarios,
+                registros
+        );
     }
 
     public List<ImpactoPorTipoItem> getPorTipo(String email) {

@@ -11,6 +11,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.web.bind.annotation.RequestParam;
+
 import java.util.List;
 
 @RestController
@@ -22,8 +24,10 @@ public class RegistroReciclajeController {
 
     @GetMapping
     public ResponseEntity<List<RegistroHistorialResponse>> listar(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(registroService.listar(userDetails.getUsername()));
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(registroService.listar(userDetails.getUsername(), page, size));
     }
 
     @PostMapping

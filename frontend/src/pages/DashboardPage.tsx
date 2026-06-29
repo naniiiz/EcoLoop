@@ -10,7 +10,7 @@ import { ArrowRight, Car, Check, Download, Leaf, Share2, ShoppingBag, Sprout, Tv
 import { Link } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import KiruState from '../components/kiru/KiruState'
-import { getImpactoMensual, getImpactoPorTipo, getImpactoResumen, getPerfil } from '../services/ecoloop'
+import { getImpactoComunidad, getImpactoMensual, getImpactoPorTipo, getImpactoResumen, getPerfil } from '../services/ecoloop'
 import { clampPercent, formatKg, formatNumber, getLevelBaseXp } from '../utils/format'
 
 const TIPO_COLORS: Record<string, string> = {
@@ -44,6 +44,11 @@ export default function DashboardPage() {
   const { data: mensual = [] } = useQuery({
     queryKey: ['impacto-mensual'],
     queryFn: getImpactoMensual
+  })
+  const { data: comunidad } = useQuery({
+    queryKey: ['impacto-comunidad'],
+    queryFn: getImpactoComunidad,
+    staleTime: 120_000,
   })
 
   const sortedPorTipo = [...porTipo].sort((a, b) => b.co2Kg - a.co2Kg)
@@ -336,6 +341,33 @@ export default function DashboardPage() {
                   <Line dataKey="co2Kg" stroke="#16a34a" strokeWidth={2.5} dot={{ r: 4, fill: '#16a34a' }} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
+            </div>
+          </section>
+        )}
+
+        {comunidad && (
+          <section className="rounded-xl bg-gradient-to-br from-eco-600 to-eco-700 p-5 text-white shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <Leaf size={20} className="text-eco-200" />
+              <h3 className="font-semibold text-white">Impacto de la comunidad EcoLoop</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-3xl font-bold text-white">{formatNumber(comunidad.co2TotalKg, 1)} kg</p>
+                <p className="text-xs text-eco-200 mt-0.5">CO₂ evitado en total</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-white">{formatNumber(comunidad.kgTotales, 1)} kg</p>
+                <p className="text-xs text-eco-200 mt-0.5">residuos reciclados</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white">{comunidad.totalUsuariosActivos}</p>
+                <p className="text-xs text-eco-200 mt-0.5">usuarios activos</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white">{comunidad.totalRegistros}</p>
+                <p className="text-xs text-eco-200 mt-0.5">registros totales</p>
+              </div>
             </div>
           </section>
         )}

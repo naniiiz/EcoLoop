@@ -1,6 +1,7 @@
 import api from './api'
 import {
   ActualizarPerfilRequest,
+  ImpactoComunidad,
   Insignia,
   ImpactoMensualItem,
   ImpactoPorTipoItem,
@@ -43,6 +44,11 @@ export async function getImpactoPorTipo() {
   const { data } = await api.get<unknown>('/impacto/por-tipo')
   if (!Array.isArray(data)) throw new Error('impacto/por-tipo no devolvio una lista')
   return data as ImpactoPorTipoItem[]
+}
+
+export async function getImpactoComunidad() {
+  const { data } = await api.get<ImpactoComunidad>('/impacto/comunidad')
+  return data
 }
 
 export async function getInsignias() {

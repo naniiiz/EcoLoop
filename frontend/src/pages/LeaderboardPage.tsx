@@ -7,7 +7,7 @@ import { useAuthStore } from '../store/authStore'
 interface LeaderboardEntry {
   posicion: number
   nombre: string
-  xpTotal: number
+  xpSemana: number
   nivelActual: string
 }
 
@@ -59,8 +59,8 @@ export default function LeaderboardPage() {
         <div className="flex items-center gap-4">
           <img src="/kiru/kiru-ranking.webp" alt="Kiru" className="w-32 h-32 object-contain drop-shadow-sm" />
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 dark:text-white">Ranking</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Top 10 recicladores de la comunidad</p>
+            <h1 className="font-display text-3xl font-bold text-gray-900 dark:text-white">Ranking Semanal</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Top 10 por XP ganado en los últimos 7 días</p>
           </div>
         </div>
 
@@ -93,7 +93,7 @@ export default function LeaderboardPage() {
                       {entry.nombre.charAt(0).toUpperCase()}
                     </div>
                     <p className="text-white font-semibold text-sm max-w-[80px] truncate text-center">{entry.nombre}</p>
-                    <p className="text-eco-100 text-xs">{entry.xpTotal} XP</p>
+                    <p className="text-eco-100 text-xs">{entry.xpSemana} XP</p>
                     <div className={`w-16 rounded-t-lg bg-white/20 ${heights[realIdx]}`} />
                   </div>
                 )
@@ -137,7 +137,7 @@ export default function LeaderboardPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-right font-semibold text-gray-700 dark:text-gray-300">
-                        {entry.xpTotal.toLocaleString()}
+                        {entry.xpSemana.toLocaleString()}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <span className="rounded-full bg-eco-100 dark:bg-eco-900/40 px-2 py-0.5 text-xs font-medium text-eco-700 dark:text-eco-400">

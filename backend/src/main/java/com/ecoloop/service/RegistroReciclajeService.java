@@ -16,6 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -70,10 +73,12 @@ public class RegistroReciclajeService {
         );
     }
 
-    public List<RegistroHistorialResponse> listar(String email) {
+    public List<RegistroHistorialResponse> listar(String email, int page, int size) {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario", "email", email));
-        return registroRepository.findByUsuarioIdOrderByFechaRegistroDesc(usuario.getId())
+        Pageable pageable = PageRequest.of(page, size);
+        return registroRepository.findByUsuarioIdOrderByFechaRegistroDesc(usuario.getId(), pageable)
+                .getContent()
                 .stream()
                 .map(r -> new RegistroHistorialResponse(
                         r.getId(),

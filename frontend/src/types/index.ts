@@ -82,6 +82,13 @@ export interface ImpactoPorTipoItem {
   registros: number
 }
 
+export interface ImpactoComunidad {
+  co2TotalKg: number
+  kgTotales: number
+  totalUsuariosActivos: number
+  totalRegistros: number
+}
+
 export interface ActualizarPerfilRequest {
   nombre: string
   metaSemanalKg: number

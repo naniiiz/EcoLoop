@@ -8,6 +8,6 @@ import lombok.Getter;
 public class LeaderboardDTO {
     private int posicion;
     private String nombre;
-    private int xpTotal;
+    private int xpSemana;
     private String nivelActual;
 }
