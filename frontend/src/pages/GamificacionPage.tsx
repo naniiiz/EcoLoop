@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react'
+import {} from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   Award,

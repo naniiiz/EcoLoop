@@ -19,7 +19,7 @@ import Navbar from '../components/layout/Navbar'
 import KiruState from '../components/kiru/KiruState'
 import { deleteRegistro, getRegistros, getTiposResiduo, registrarResiduo } from '../services/ecoloop'
 import { RegistroResponse } from '../types'
-import { formatKg, formatNumber } from '../utils/format'
+import { formatKg } from '../utils/format'
 
 const RESIDUO_ICONS: Record<string, LucideIcon> = {
   PLASTICO: Recycle,

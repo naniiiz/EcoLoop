@@ -88,11 +88,6 @@ export default function ScannerPage() {
 
   const categoriaStyle = vision ? (CATEGORIA_STYLES[vision.categoria] ?? CATEGORIA_STYLES['PLASTICO']) : null
 
-  const kiruState = phase === 'scanning'
-    ? 'THINKING'
-    : phase === 'registered'
-      ? (levelUp ? 'CELEBRATE' : 'CONFIRM')
-      : 'ANALYZE'
 
   return (
     <div className="min-h-screen bg-eco-50 dark:bg-gray-900">
