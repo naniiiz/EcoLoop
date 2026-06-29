@@ -192,7 +192,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-eco-50 dark:bg-gray-900">
       <Navbar />
-      <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+      <main className="max-w-6xl mx-auto px-4 py-8 pb-28 space-y-6">
         <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
             <KiruState state={isNewUser ? 'WELCOME' : 'IMPACT'} size={106} animate />
@@ -222,7 +222,7 @@ export default function DashboardPage() {
           </div>
           <Link
             to="/registro"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-eco-600 px-4 text-sm font-semibold text-white hover:bg-eco-700 transition-colors"
+            className="w-full sm:w-auto inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-eco-600 px-4 text-sm font-semibold text-white hover:bg-eco-700 transition-colors"
           >
             Registrar residuo
             <ArrowRight size={16} />
@@ -353,11 +353,11 @@ export default function DashboardPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-3xl font-bold text-white">{formatNumber(comunidad.co2TotalKg, 1)} kg</p>
+                <p className="text-2xl sm:text-3xl font-bold text-white">{formatNumber(comunidad.co2TotalKg, 1)} kg</p>
                 <p className="text-xs text-eco-200 mt-0.5">CO₂ evitado en total</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-white">{formatNumber(comunidad.kgTotales, 1)} kg</p>
+                <p className="text-2xl sm:text-3xl font-bold text-white">{formatNumber(comunidad.kgTotales, 1)} kg</p>
                 <p className="text-xs text-eco-200 mt-0.5">residuos reciclados</p>
               </div>
               <div>
@@ -377,46 +377,45 @@ export default function DashboardPage() {
   )
 }
 
-function FilledFlame() {
+function FilledFlame({ size = 52, uid = 'a' }: { size?: number; uid?: string }) {
+  const g = `fg-${uid}`
+  const gi = `fi-${uid}`
   return (
-    <svg width="52" height="52" viewBox="0 0 52 52" fill="none" aria-hidden>
+    <svg width={size} height={size} viewBox="0 0 52 52" fill="none" aria-hidden>
       <defs>
-        <linearGradient id="flameGrad" x1="26" y1="4" x2="26" y2="48" gradientUnits="userSpaceOnUse">
+        <linearGradient id={g} x1="26" y1="4" x2="26" y2="48" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stopColor="#FDE68A" />
           <stop offset="45%" stopColor="#FB923C" />
           <stop offset="100%" stopColor="#EA580C" />
         </linearGradient>
-        <linearGradient id="flameInner" x1="26" y1="18" x2="26" y2="40" gradientUnits="userSpaceOnUse">
+        <linearGradient id={gi} x1="26" y1="18" x2="26" y2="40" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stopColor="#FEF9C3" stopOpacity="0.9" />
           <stop offset="100%" stopColor="#FDE68A" stopOpacity="0.3" />
         </linearGradient>
       </defs>
-      <path
-        d="M26 4C23 11 15 18 15 28a11 11 0 0 0 22 0c0-10-8-17-11-24z"
-        fill="url(#flameGrad)"
-      />
-      <path
-        d="M26 18C24.5 21.5 22 25 22 29a4 4 0 0 0 8 0c0-4-2.5-7.5-4-11z"
-        fill="url(#flameInner)"
-      />
+      <path d="M26 4C23 11 15 18 15 28a11 11 0 0 0 22 0c0-10-8-17-11-24z" fill={`url(#${g})`} />
+      <path d="M26 18C24.5 21.5 22 25 22 29a4 4 0 0 0 8 0c0-4-2.5-7.5-4-11z" fill={`url(#${gi})`} />
     </svg>
   )
 }
 
 function StreakCard({ value, loading }: { value: string; loading?: boolean }) {
   return (
-    <div className="relative overflow-hidden rounded-xl p-5 shadow-xl bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 ring-2 ring-orange-300/40 scale-[1.04]">
-      <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-white/10 pointer-events-none" />
-      <div className="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-white/10 pointer-events-none" />
-      <div className="relative flex items-center gap-3">
-        <FilledFlame />
-        <div className="min-w-0">
-          <div className="font-display text-3xl font-black text-white leading-tight tracking-tight drop-shadow">
-            {loading ? '...' : value}
-          </div>
-          <div className="text-sm font-semibold text-orange-100 mt-0.5">Racha actual</div>
-        </div>
+    <div
+      className="rounded-lg p-5 border bg-white dark:bg-gray-800 border-orange-200 dark:border-orange-800 flex flex-col items-center justify-center gap-1"
+      style={{ boxShadow: '0 0 22px 6px rgba(251,146,60,0.28), 0 1px 3px 0 rgba(0,0,0,0.07)' }}
+    >
+      <div className="relative flex items-center justify-center">
+        <div
+          className="fire-aura absolute rounded-full w-16 h-16"
+          style={{ background: 'radial-gradient(circle, rgba(251,146,60,0.45) 0%, transparent 70%)', filter: 'blur(7px)' }}
+        />
+        <FilledFlame size={44} uid="streak" />
       </div>
+      <div className="font-display text-2xl font-bold tracking-tight leading-tight text-orange-600 dark:text-orange-400 mt-1">
+        {loading ? '...' : value}
+      </div>
+      <div className="text-sm text-gray-500 dark:text-gray-400 leading-tight">Racha actual</div>
     </div>
   )
 }
@@ -442,23 +441,21 @@ function StatCard({
         ? 'scale-105 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/30 dark:to-gray-800 border-orange-200 dark:border-orange-800 shadow-[0_0_18px_3px_rgba(249,115,22,0.18)]'
         : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'
     }`}>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col items-center justify-center gap-1 text-center">
         <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg ${
           featured ? 'bg-orange-100 dark:bg-orange-900/40' : 'bg-gray-50 dark:bg-gray-700'
         }`}>
           {icon}
         </div>
-        <div className="min-w-0">
-          <div className={`font-display text-2xl font-bold tracking-tight leading-tight ${
-            featured ? 'text-orange-600 dark:text-orange-400' : 'text-eco-700 dark:text-eco-400'
-          }`}>
-            {loading ? '...' : value}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 leading-tight">{label}</div>
-          {hint && !loading && (
-            <div className="text-xs text-eco-600 dark:text-eco-400 mt-0.5 leading-tight">{hint}</div>
-          )}
+        <div className={`font-display text-2xl font-bold tracking-tight leading-tight mt-1 ${
+          featured ? 'text-orange-600 dark:text-orange-400' : 'text-eco-700 dark:text-eco-400'
+        }`}>
+          {loading ? '...' : value}
         </div>
+        <div className="text-sm text-gray-500 dark:text-gray-400 leading-tight">{label}</div>
+        {hint && !loading && (
+          <div className="text-xs text-eco-600 dark:text-eco-400 leading-tight">{hint}</div>
+        )}
       </div>
     </div>
   )

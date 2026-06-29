@@ -1,4 +1,6 @@
 import { StrictMode } from 'react'
+
+window.addEventListener('vite:preloadError', () => { window.location.reload() })
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App'

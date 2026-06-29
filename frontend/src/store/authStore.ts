@@ -12,10 +12,12 @@ interface AuthState {
   email: string | null
   theme: 'light' | 'dark'
   authTransition: AuthTransition | null
+  kiruOpen: boolean
   setAuth: (token: string, nombre: string, email: string) => void
   logout: () => void
   toggleTheme: () => void
   setAuthTransition: (t: AuthTransition | null) => void
+  setKiruOpen: (open: boolean) => void
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -26,10 +28,12 @@ export const useAuthStore = create<AuthState>()(
       email: null,
       theme: 'light',
       authTransition: null,
+      kiruOpen: false,
       setAuth: (token, nombre, email) => set({ token, nombre, email }),
       logout: () => set({ token: null, nombre: null, email: null }),
       toggleTheme: () => set({ theme: get().theme === 'light' ? 'dark' : 'light' }),
       setAuthTransition: (t) => set({ authTransition: t }),
+      setKiruOpen: (open) => set({ kiruOpen: open }),
     }),
     {
       name: 'ecoloop-auth',

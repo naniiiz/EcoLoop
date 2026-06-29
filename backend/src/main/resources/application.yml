@@ -1,6 +1,10 @@
 spring:
   application:
     name: ecoloop-backend
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
   jackson:
     serialization:
       write-dates-as-timestamps: false

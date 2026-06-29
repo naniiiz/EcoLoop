@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react'
+import { type ReactNode, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Camera, CheckCircle2, RefreshCw, Scale } from 'lucide-react'
+import { Camera, CheckCircle2, ImageUp, Lightbulb, RefreshCw, Scale, ScanLine, Sparkles } from 'lucide-react'
 import Navbar from '../components/layout/Navbar'
 import KiruState from '../components/kiru/KiruState'
 import {
@@ -21,9 +21,32 @@ const CATEGORIA_STYLES: Record<string, { bg: string; text: string; label: string
 
 type Phase = 'idle' | 'preview' | 'scanning' | 'result' | 'registered'
 
+function compressImage(file: File, maxPx = 1024, quality = 0.85): Promise<File> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height))
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.round(img.width * scale)
+      canvas.height = Math.round(img.height * scale)
+      canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
+      canvas.toBlob(
+        (blob) => resolve(new File([blob!], 'image.jpg', { type: 'image/jpeg' })),
+        'image/jpeg',
+        quality,
+      )
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file) }
+    img.src = url
+  })
+}
+
 export default function ScannerPage() {
   const queryClient = useQueryClient()
-  const inputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
   const [phase, setPhase] = useState<Phase>('idle')
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -62,14 +85,15 @@ export default function ScannerPage() {
     },
   })
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    setSelectedFile(file)
-    setPreviewUrl(URL.createObjectURL(file))
-    setPhase('preview')
     setVision(null)
     setScanFailed(false)
+    setPreviewUrl(URL.createObjectURL(file))
+    setPhase('preview')
+    const compressed = await compressImage(file)
+    setSelectedFile(compressed)
   }
 
   const handleScan = () => {
@@ -94,7 +118,8 @@ export default function ScannerPage() {
     setVision(null)
     setScanFailed(false)
     setCantidad('0.5')
-    if (inputRef.current) inputRef.current.value = ''
+    if (cameraInputRef.current) cameraInputRef.current.value = ''
+    if (galleryInputRef.current) galleryInputRef.current.value = ''
   }
 
   const categoriaStyle = vision ? (CATEGORIA_STYLES[vision.categoria] ?? CATEGORIA_STYLES['PLASTICO']) : null
@@ -103,7 +128,7 @@ export default function ScannerPage() {
   return (
     <div className="min-h-screen bg-eco-50 dark:bg-gray-900">
       <Navbar />
-      <main className="max-w-lg mx-auto px-4 py-8 space-y-6">
+      <main className="max-w-lg mx-auto px-4 py-8 pb-28 space-y-6">
         <section className="flex items-center gap-4">
           <img src="/kiru/kiru-scanner.webp" alt="Kiru" className="w-32 h-32 object-contain drop-shadow-sm" />
           <div>
@@ -119,22 +144,61 @@ export default function ScannerPage() {
         </section>
 
         <input
-          ref={inputRef}
+          ref={cameraInputRef}
           type="file"
           accept="image/*"
           capture="environment"
           className="hidden"
           onChange={handleFileChange}
         />
+        <input
+          ref={galleryInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileChange}
+        />
 
         {phase === 'idle' && (
-          <button
-            onClick={() => inputRef.current?.click()}
-            className="flex w-full items-center justify-center gap-3 rounded-xl bg-eco-600 px-6 py-5 text-lg font-semibold text-white shadow-lg hover:bg-eco-700 transition-colors"
-          >
-            <Camera size={26} />
-            Escanear residuo
-          </button>
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => cameraInputRef.current?.click()}
+                className="flex flex-col items-center justify-center gap-2 rounded-xl bg-eco-600 px-4 py-5 text-sm font-semibold text-white shadow-lg hover:bg-eco-700 transition-colors"
+              >
+                <Camera size={28} />
+                Tomar foto
+              </button>
+              <button
+                onClick={() => galleryInputRef.current?.click()}
+                className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-eco-600 px-4 py-5 text-sm font-semibold text-eco-600 dark:text-eco-400 hover:bg-eco-50 dark:hover:bg-eco-900/20 transition-colors"
+              >
+                <ImageUp size={28} />
+                Subir imagen
+              </button>
+            </div>
+
+            <div className="rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-5 space-y-4">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">Cómo funciona</h3>
+              <div className="space-y-3">
+                <Step icon={<Camera size={18} className="text-eco-600 dark:text-eco-400" />} n="1" title="Fotografía el residuo" desc="Usa la cámara o sube una imagen desde tu galería." />
+                <Step icon={<Sparkles size={18} className="text-purple-500" />} n="2" title="Kiru lo analiza con IA" desc="Identifica el tipo, el contenedor correcto y si es reciclable." />
+                <Step icon={<CheckCircle2 size={18} className="text-eco-600 dark:text-eco-400" />} n="3" title="Registra e impacta" desc="Confirma el peso, gana XP y reduce tu huella de carbono." />
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 space-y-2">
+              <div className="flex items-center gap-2 text-sm font-semibold text-amber-700 dark:text-amber-300">
+                <Lightbulb size={15} />
+                Consejos para mejores resultados
+              </div>
+              <ul className="space-y-1 text-sm text-amber-700 dark:text-amber-300">
+                <li className="flex items-start gap-2"><ScanLine size={14} className="mt-0.5 shrink-0" /> Centra el residuo en el encuadre</li>
+                <li className="flex items-start gap-2"><ScanLine size={14} className="mt-0.5 shrink-0" /> Buena iluminación, evita sombras fuertes</li>
+                <li className="flex items-start gap-2"><ScanLine size={14} className="mt-0.5 shrink-0" /> Foto nítida, sin desenfoque</li>
+              </ul>
+            </div>
+          </div>
         )}
 
         {(phase === 'preview' || phase === 'scanning') && previewUrl && (
@@ -268,6 +332,20 @@ export default function ScannerPage() {
           </div>
         )}
       </main>
+    </div>
+  )
+}
+
+function Step({ icon, n, title, desc }: { icon: ReactNode; n: string; title: string; desc: string }) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-eco-50 dark:bg-gray-700">
+        {icon}
+      </div>
+      <div className="min-w-0 pt-0.5">
+        <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{n}. {title}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{desc}</p>
+      </div>
     </div>
   )
 }

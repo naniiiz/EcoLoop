@@ -35,9 +35,8 @@ function KiruToggleIcon({ theme, animating }: { theme: string; animating: boolea
 }
 
 export default function Navbar() {
-  const { nombre, theme, toggleTheme, setAuthTransition } = useAuthStore()
+  const { nombre, theme, toggleTheme, setAuthTransition, kiruOpen, setKiruOpen } = useAuthStore()
   const [animating, setAnimating] = useState(false)
-  const [kiruOpen, setKiruOpen] = useState(false)
   const location = useLocation()
   const navRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -167,7 +166,7 @@ export default function Navbar() {
       <KiruChatWidget open={kiruOpen} onClose={() => setKiruOpen(false)} />
 
       <button
-        onClick={() => setKiruOpen(prev => !prev)}
+        onClick={() => setKiruOpen(!kiruOpen)}
         className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full bg-eco-600 px-4 py-3 text-white shadow-lg hover:bg-eco-700 transition-colors"
       >
         <img src="/kiru/castor-botella.webp" alt="Kiru" width={28} height={28} className="object-contain" />

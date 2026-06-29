@@ -82,7 +82,7 @@ export default function PerfilHabitosPage() {
   return (
     <div className="min-h-screen bg-eco-50 dark:bg-gray-900">
       <Navbar />
-      <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+      <main className="max-w-6xl mx-auto px-4 py-8 pb-28 space-y-6">
 
         <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">

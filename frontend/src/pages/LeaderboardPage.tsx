@@ -55,7 +55,7 @@ export default function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-eco-50 dark:bg-gray-900">
       <Navbar />
-      <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      <main className="max-w-2xl mx-auto px-4 py-8 pb-28 space-y-6">
         <div className="flex items-center gap-4">
           <img src="/kiru/kiru-ranking.webp" alt="Kiru" className="w-32 h-32 object-contain drop-shadow-sm" />
           <div>
@@ -93,7 +93,7 @@ export default function LeaderboardPage() {
                       {entry.nombre.charAt(0).toUpperCase()}
                     </div>
                     <p className="text-white font-semibold text-sm max-w-[80px] truncate text-center">{entry.nombre}</p>
-                    <p className="text-eco-100 text-xs">{entry.xpSemana} XP</p>
+                    <p className="text-eco-100 text-xs">{entry.xpSemana ?? 0} XP</p>
                     <div className={`w-16 rounded-t-lg bg-white/20 ${heights[realIdx]}`} />
                   </div>
                 )
@@ -137,7 +137,7 @@ export default function LeaderboardPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-right font-semibold text-gray-700 dark:text-gray-300">
-                        {entry.xpSemana.toLocaleString()}
+                        {(entry.xpSemana ?? 0).toLocaleString()}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <span className="rounded-full bg-eco-100 dark:bg-eco-900/40 px-2 py-0.5 text-xs font-medium text-eco-700 dark:text-eco-400">

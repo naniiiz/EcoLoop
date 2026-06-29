@@ -1,10 +1,11 @@
-import {} from 'react'
+import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
   Award,
   BadgeCheck,
   FileText,
   Flame,
+  HelpCircle,
   LockKeyhole,
   Recycle,
   ShieldCheck,
@@ -56,7 +57,7 @@ export default function GamificacionPage() {
   return (
     <div className="min-h-screen bg-eco-50 dark:bg-gray-900">
       <Navbar />
-      <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+      <main className="max-w-6xl mx-auto px-4 py-8 pb-28 space-y-6">
 
         <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
@@ -209,6 +210,22 @@ export default function GamificacionPage() {
               </div>
             )}
           </div>
+        </section>
+
+        <section className="flex items-center justify-between rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 px-5 py-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <HelpCircle size={20} className="text-eco-600 dark:text-eco-400 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">¿Tienes dudas sobre la racha o el XP?</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Consulta las preguntas frecuentes de EcoLoop</p>
+            </div>
+          </div>
+          <Link
+            to="/faq"
+            className="shrink-0 rounded-lg bg-eco-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-eco-700 transition-colors"
+          >
+            Ver FAQ
+          </Link>
         </section>
 
       </main>

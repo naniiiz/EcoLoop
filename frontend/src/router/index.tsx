@@ -11,6 +11,7 @@ const GamificacionPage = lazy(() => import('../pages/GamificacionPage'))
 const PerfilHabitosPage = lazy(() => import('../pages/PerfilHabitosPage'))
 const ScannerPage = lazy(() => import('../pages/ScannerPage'))
 const LeaderboardPage = lazy(() => import('../pages/LeaderboardPage'))
+const FaqPage = lazy(() => import('../pages/FaqPage'))
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore(s => s.token)
@@ -52,6 +53,11 @@ export const router = createBrowserRouter([
   {
     path: '/leaderboard',
     element: <PrivateRoute><Suspense fallback={null}><LeaderboardPage /></Suspense></PrivateRoute>,
+    errorElement: <RouteErrorPage />
+  },
+  {
+    path: '/faq',
+    element: <PrivateRoute><Suspense fallback={null}><FaqPage /></Suspense></PrivateRoute>,
     errorElement: <RouteErrorPage />
   },
   { path: '*', element: <Navigate to="/" replace /> }
