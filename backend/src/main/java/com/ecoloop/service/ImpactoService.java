@@ -87,17 +87,13 @@ public class ImpactoService {
     }
 
     public ImpactoComunidadResponse getComunidadResumen() {
-        Object[] row = registroRepository.findComunidadTotales();
-        double co2 = row[0] != null ? ((Number) row[0]).doubleValue() : 0;
-        double kg  = row[1] != null ? ((Number) row[1]).doubleValue() : 0;
-        long usuarios = row[2] != null ? ((Number) row[2]).longValue() : 0;
-        long registros = row[3] != null ? ((Number) row[3]).longValue() : 0;
-        return new ImpactoComunidadResponse(
-                Math.round(co2 * 100.0) / 100.0,
-                Math.round(kg  * 100.0) / 100.0,
-                usuarios,
-                registros
-        );
+        var co2Raw = registroRepository.sumCo2Total();
+        var kgRaw  = registroRepository.sumKgTotal();
+        long usuarios  = registroRepository.countUsuariosActivos();
+        long registros = registroRepository.countTotalRegistros();
+        double co2 = co2Raw != null ? Math.round(co2Raw.doubleValue() * 100.0) / 100.0 : 0;
+        double kg  = kgRaw  != null ? Math.round(kgRaw.doubleValue()  * 100.0) / 100.0 : 0;
+        return new ImpactoComunidadResponse(co2, kg, usuarios, registros);
     }
 
     public List<ImpactoPorTipoItem> getPorTipo(String email) {
