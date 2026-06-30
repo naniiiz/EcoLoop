@@ -1,6 +1,6 @@
-import { type ReactNode, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Camera, CheckCircle2, ImageUp, Lightbulb, RefreshCw, Scale, ScanLine, Sparkles } from 'lucide-react'
+import { Camera, CheckCircle2, ImageUp, Lightbulb, RefreshCw, Scale, ScanLine, Sparkles, X } from 'lucide-react'
 import Navbar from '../components/layout/Navbar'
 import KiruState from '../components/kiru/KiruState'
 import {
@@ -54,6 +54,9 @@ export default function ScannerPage() {
   const [cantidad, setCantidad] = useState('0.5')
   const [levelUp, setLevelUp] = useState(false)
   const [scanFailed, setScanFailed] = useState(false)
+  const [showCamera, setShowCamera] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
 
   const { data: tipos = [] } = useQuery({ queryKey: ['tipos-residuo'], queryFn: getTiposResiduo })
 
@@ -84,6 +87,54 @@ export default function ScannerPage() {
       void queryClient.invalidateQueries({ queryKey: ['insignias'] })
     },
   })
+
+  useEffect(() => {
+    if (showCamera && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current
+    }
+  }, [showCamera])
+
+  const stopCamera = () => {
+    streamRef.current?.getTracks().forEach(t => t.stop())
+    streamRef.current = null
+    setShowCamera(false)
+  }
+
+  const openCamera = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      cameraInputRef.current?.click()
+      return
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
+      })
+      streamRef.current = stream
+      setShowCamera(true)
+    } catch {
+      cameraInputRef.current?.click()
+    }
+  }
+
+  const capturePhoto = () => {
+    const video = videoRef.current
+    if (!video) return
+    const canvas = document.createElement('canvas')
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    canvas.getContext('2d')!.drawImage(video, 0, 0)
+    canvas.toBlob(async (blob) => {
+      if (!blob) return
+      const file = new File([blob], 'camera.jpg', { type: 'image/jpeg' })
+      stopCamera()
+      setVision(null)
+      setScanFailed(false)
+      setPreviewUrl(URL.createObjectURL(file))
+      setPhase('preview')
+      const compressed = await compressImage(file)
+      setSelectedFile(compressed)
+    }, 'image/jpeg', 0.92)
+  }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -163,7 +214,7 @@ export default function ScannerPage() {
           <div className="space-y-5">
             <div className="grid grid-cols-2 gap-3">
               <button
-                onClick={() => cameraInputRef.current?.click()}
+                onClick={openCamera}
                 className="flex flex-col items-center justify-center gap-2 rounded-xl bg-eco-600 px-4 py-5 text-sm font-semibold text-white shadow-lg hover:bg-eco-700 transition-colors"
               >
                 <Camera size={28} />
@@ -332,6 +383,34 @@ export default function ScannerPage() {
           </div>
         )}
       </main>
+
+      {showCamera && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-black">
+          <div className="flex items-center justify-between px-4 py-3 shrink-0">
+            <span className="text-sm font-medium text-white">Cámara</span>
+            <button onClick={stopCamera} className="rounded-full p-2 text-white hover:bg-white/10 transition-colors">
+              <X size={22} />
+            </button>
+          </div>
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full shrink min-h-0 object-contain"
+            style={{ maxHeight: 'calc(100vh - 140px)' }}
+          />
+          <div className="shrink-0 flex flex-col items-center gap-2 py-5 bg-black">
+            <button
+              onClick={capturePhoto}
+              className="h-16 w-16 rounded-full border-4 border-white bg-white/20 hover:bg-white/40 active:scale-95 transition-all flex items-center justify-center"
+            >
+              <Camera size={24} className="text-white" />
+            </button>
+            <span className="text-xs text-white/70">Tomar foto</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

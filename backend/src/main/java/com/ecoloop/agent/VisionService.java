@@ -28,7 +28,9 @@ public class VisionService {
     private String model;
 
     private static final String PROMPT =
-            "Identifica el residuo en la imagen. Responde SOLO con JSON sin texto adicional: " +
+            "Analiza la imagen. Si NO contiene un residuo o basura identificable (por ejemplo: cara, persona, paisaje, texto, captura de pantalla, animal, objeto no desechable), " +
+            "responde EXACTAMENTE: {\"nombre\":\"Desconocido\",\"categoria\":\"PLASTICO\",\"reciclable\":false,\"contenedor\":\"gris\",\"consejo\":\"La imagen no contiene un residuo identificable.\"}. " +
+            "Si SÍ contiene un residuo, responde SOLO con JSON sin texto adicional: " +
             "{\"nombre\":\"string\",\"categoria\":\"PLASTICO|PAPEL|VIDRIO|METAL|ORGANICO|ELECTRONICO\"," +
             "\"reciclable\":true|false,\"contenedor\":\"color\",\"consejo\":\"max 15 palabras\"}";
 
